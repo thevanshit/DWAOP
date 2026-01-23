@@ -36,6 +36,10 @@ import {
   ClipboardCheck,
   Search,
   MoreVertical,
+  MessageSquare,
+  HelpCircle,
+  UserCheck,
+  Briefcase,
 } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -92,6 +96,8 @@ export default function AdminDashboard() {
     { label: 'Student Risk', icon: <AlertTriangle className="w-5 h-5" />, href: '#risk' },
     { label: 'Analytics', icon: <BarChart3 className="w-5 h-5" />, href: '#analytics' },
     { label: 'Workflows', icon: <FileText className="w-5 h-5" />, href: '#workflows' },
+    { label: 'Student Queries', icon: <MessageSquare className="w-5 h-5" />, href: '#queries' },
+    { label: 'Chairperson Office', icon: <Briefcase className="w-5 h-5" />, href: '#chairperson' },
     { label: 'Student Registration', icon: <UserPlus className="w-5 h-5" />, href: '#registration' },
     { label: 'Fee Management', icon: <CreditCard className="w-5 h-5" />, href: '#fees' },
     { label: 'Semester Registration', icon: <BookOpen className="w-5 h-5" />, href: '#semester' },
@@ -193,15 +199,14 @@ export default function AdminDashboard() {
         <div className="card rounded-2xl">
           <div className="border-b border-jira-gray-200 mb-6">
             <div className="flex space-x-6 overflow-x-auto">
-              {['overview', 'scrum', 'risk', 'analytics', 'workflows', 'registration', 'fees', 'semester', 'documents', 'details', 'course', 'exam', 'policy'].map((tab) => (
+              {['overview', 'scrum', 'risk', 'analytics', 'workflows', 'queries', 'chairperson', 'registration', 'fees', 'semester', 'documents', 'details', 'course', 'exam', 'policy'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setSelectedTab(tab)}
-                  className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors whitespace-nowrap ${
-                    selectedTab === tab
-                      ? 'border-blue-600 text-blue-600'
-                      : 'border-transparent text-jira-gray-600 hover:text-jira-gray-900'
-                  }`}
+                  className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors whitespace-nowrap ${selectedTab === tab
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-jira-gray-600 hover:text-jira-gray-900'
+                    }`}
                 >
                   {tab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                 </button>
@@ -403,9 +408,8 @@ export default function AdminDashboard() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center space-x-3">
                           <div
-                            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md ${
-                              student.risk === 'high' ? 'bg-gradient-to-br from-rose-500 to-red-600' : 'bg-gradient-to-br from-amber-500 to-orange-500'
-                            }`}
+                            className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md ${student.risk === 'high' ? 'bg-gradient-to-br from-rose-500 to-red-600' : 'bg-gradient-to-br from-amber-500 to-orange-500'
+                              }`}
                           >
                             {student.name
                               .split(' ')
@@ -419,9 +423,8 @@ export default function AdminDashboard() {
                             <p className="text-xs text-gray-600">{student.id} • {student.batch}</p>
                           </div>
                         </div>
-                        <span className={`px-3 py-1 text-xs rounded-full font-semibold ${
-                          student.risk === 'high' ? 'bg-rose-200 text-rose-800' : 'bg-amber-200 text-amber-800'
-                        }`}>
+                        <span className={`px-3 py-1 text-xs rounded-full font-semibold ${student.risk === 'high' ? 'bg-rose-200 text-rose-800' : 'bg-amber-200 text-amber-800'
+                          }`}>
                           {student.risk === 'high' ? 'High Risk' : 'Medium Risk'}
                         </span>
                       </div>
@@ -473,11 +476,10 @@ export default function AdminDashboard() {
                             <span className="text-xs text-gray-600">{item.assignee}</span>
                           </div>
                         </div>
-                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                          item.priority === 'high' ? 'bg-red-100 text-red-700' :
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${item.priority === 'high' ? 'bg-red-100 text-red-700' :
                           item.priority === 'medium' ? 'bg-orange-100 text-orange-700' :
-                          'bg-blue-100 text-blue-700'
-                        }`}>
+                            'bg-blue-100 text-blue-700'
+                          }`}>
                           {item.priority}
                         </span>
                       </div>
@@ -597,11 +599,10 @@ export default function AdminDashboard() {
                             <h5 className="font-semibold text-sm text-gray-900 group-hover:text-blue-700 transition-colors line-clamp-2">
                               {task.title}
                             </h5>
-                            <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ml-2 ${
-                              task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                            <span className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ml-2 ${task.priority === 'high' ? 'bg-red-100 text-red-700' :
                               task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
-                              'bg-blue-100 text-blue-700'
-                            }`}>
+                                'bg-blue-100 text-blue-700'
+                              }`}>
                               {task.priority}
                             </span>
                           </div>
@@ -784,11 +785,10 @@ export default function AdminDashboard() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-4">
                         <div
-                          className={`w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg ${
-                            student.eligibility === 'not_eligible' ? 'bg-gradient-to-br from-rose-500 to-red-600' :
+                          className={`w-14 h-14 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg ${student.eligibility === 'not_eligible' ? 'bg-gradient-to-br from-rose-500 to-red-600' :
                             student.attendance < 70 ? 'bg-gradient-to-br from-rose-400 to-pink-500' :
-                            'bg-gradient-to-br from-amber-500 to-orange-500'
-                          }`}
+                              'bg-gradient-to-br from-amber-500 to-orange-500'
+                            }`}
                         >
                           {student.name
                             .split(' ')
@@ -807,9 +807,8 @@ export default function AdminDashboard() {
                           <p className="text-sm text-gray-600">{student.id} • {student.program} • {student.semester} • {student.batch}</p>
                         </div>
                       </div>
-                      <span className={`px-3 py-1 text-xs rounded-full font-semibold ${
-                        student.eligibility === 'not_eligible' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'
-                      }`}>
+                      <span className={`px-3 py-1 text-xs rounded-full font-semibold ${student.eligibility === 'not_eligible' ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'
+                        }`}>
                         {student.eligibility === 'not_eligible' ? 'Not Eligible' : 'At Risk'}
                       </span>
                     </div>
@@ -838,9 +837,8 @@ export default function AdminDashboard() {
                           <p className="text-xs text-gray-600 mb-1">Overall Attendance</p>
                           <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
                             <div
-                              className={`h-2.5 rounded-full ${
-                                student.attendance < 70 ? 'bg-red-500' : 'bg-amber-500'
-                              }`}
+                              className={`h-2.5 rounded-full ${student.attendance < 70 ? 'bg-red-500' : 'bg-amber-500'
+                                }`}
                               style={{ width: `${student.attendance}%` }}
                             ></div>
                           </div>
@@ -1049,25 +1047,23 @@ export default function AdminDashboard() {
                     ].map((item, idx) => (
                       <div key={idx} className="text-center">
                         <div
-                          className={`w-full h-20 rounded-xl mb-2 flex items-center justify-center text-white font-bold text-lg shadow-lg ${
-                            item.risk === 'high'
-                              ? 'bg-gradient-to-br from-red-500 to-rose-600'
-                              : item.risk === 'medium'
+                          className={`w-full h-20 rounded-xl mb-2 flex items-center justify-center text-white font-bold text-lg shadow-lg ${item.risk === 'high'
+                            ? 'bg-gradient-to-br from-red-500 to-rose-600'
+                            : item.risk === 'medium'
                               ? 'bg-gradient-to-br from-amber-500 to-orange-500'
                               : 'bg-gradient-to-br from-emerald-500 to-green-600'
-                          }`}
+                            }`}
                         >
                           {item.value}
                         </div>
                         <p className="text-xs font-semibold text-gray-900">{item.subject}</p>
                         <p
-                          className={`text-[10px] font-medium ${
-                            item.risk === 'high'
-                              ? 'text-red-600'
-                              : item.risk === 'medium'
+                          className={`text-[10px] font-medium ${item.risk === 'high'
+                            ? 'text-red-600'
+                            : item.risk === 'medium'
                               ? 'text-amber-600'
                               : 'text-emerald-600'
-                          }`}
+                            }`}
                         >
                           {item.risk === 'high' ? 'High Risk' : item.risk === 'medium' ? 'Medium Risk' : 'Low Risk'}
                         </p>
@@ -1224,43 +1220,54 @@ export default function AdminDashboard() {
                               <span>•</span>
                               <span>{workflow.date}</span>
                             </div>
-                            {workflow.type === 'attendance' && (
-                              <div className="mt-2 text-xs text-gray-600">
-                                Present: {workflow.present}/{workflow.students} ({Math.round((workflow.present / workflow.students) * 100)}%)
-                              </div>
-                            )}
-                            {workflow.type === 'assignment' && (
-                              <div className="mt-2 text-xs text-gray-600">
-                                Submissions: {workflow.submissions}/{workflow.total} ({Math.round((workflow.submissions / workflow.total) * 100)}%)
-                              </div>
-                            )}
-                            {workflow.type === 'marks' && (
-                              <div className="mt-2 text-xs text-gray-600">
-                                Marks Entered: {workflow.entered}/{workflow.students} ({Math.round((workflow.entered / workflow.students) * 100)}%)
-                              </div>
-                            )}
-                            {workflow.type === 'task' && (
-                              <div className="mt-2">
-                                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                                  <span>Progress</span>
-                                  <span>{workflow.progress}%</span>
+                            {workflow.type === 'attendance' &&
+                              workflow.present !== undefined &&
+                              workflow.students !== undefined &&
+                              workflow.students > 0 && (
+                                <div className="mt-2 text-xs text-gray-600">
+                                  Present: {workflow.present}/{workflow.students} (
+                                  {Math.round((workflow.present / workflow.students) * 100)}%)
                                 </div>
-                                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                  <div
-                                    className="bg-blue-500 h-1.5 rounded-full"
-                                    style={{ width: `${workflow.progress}%` }}
-                                  ></div>
+                              )}
+
+                            {workflow.type === 'assignment' &&
+                              workflow.submissions !== undefined &&
+                              workflow.total !== undefined &&
+                              workflow.total > 0 && (
+                                <div className="mt-2 text-xs text-gray-600">
+                                  Submissions: {workflow.submissions}/{workflow.total} ({Math.round((workflow.submissions / workflow.total) * 100)}%)
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            {workflow.type === 'marks' &&
+                              workflow.entered !== undefined &&
+                              workflow.students !== undefined &&
+                              workflow.students > 0 && (
+                                <div className="mt-2 text-xs text-gray-600">
+                                  Marks Entered: {workflow.entered}/{workflow.students} ({Math.round((workflow.entered / workflow.students) * 100)}%)
+                                </div>
+                              )}
+                            {workflow.type === 'task' &&
+                              workflow.progress !== undefined && (
+                                <div className="mt-2">
+                                  <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                    <span>Progress</span>
+                                    <span>{workflow.progress}%</span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div
+                                      className="bg-blue-500 h-1.5 rounded-full"
+                                      style={{ width: `${workflow.progress}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              )}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                            workflow.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${workflow.priority === 'critical' ? 'bg-red-100 text-red-700' :
                             workflow.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
+                              'bg-gray-100 text-gray-700'
+                            }`}>
                             {workflow.priority}
                           </span>
                           <span className={`px-3 py-1 text-xs rounded-full capitalize ${statusColors[workflow.status as keyof typeof statusColors]}`}>
@@ -1295,6 +1302,473 @@ export default function AdminDashboard() {
                     </div>
                   )
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Student Queries Tab */}
+          {selectedTab === 'queries' && (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Student Queries & Help Center</h3>
+                  <p className="text-sm text-gray-600">
+                    Manage student queries, applications, document requests, and support tickets.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button className="btn-secondary flex items-center space-x-2">
+                    <Filter className="w-4 h-4" />
+                    <span>Filter</span>
+                  </button>
+                  <button className="btn-secondary flex items-center space-x-2">
+                    <Download className="w-4 h-4" />
+                    <span>Export</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Query Stats */}
+              <div className="grid md:grid-cols-4 gap-4">
+                {[
+                  { label: 'Pending Queries', count: 42, color: 'from-amber-500 to-orange-500', icon: Clock },
+                  { label: 'Resolved', count: 156, color: 'from-green-500 to-emerald-600', icon: CheckCircle },
+                  { label: 'In Progress', count: 18, color: 'from-blue-500 to-blue-600', icon: Activity },
+                  { label: 'Total Queries', count: 216, color: 'from-purple-500 to-purple-600', icon: MessageSquare },
+                ].map((stat, idx) => {
+                  const IconComponent = stat.icon
+                  return (
+                    <div key={idx} className="p-5 rounded-xl bg-gradient-to-br from-white to-gray-50 border border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-gray-600 mb-1">{stat.label}</p>
+                          <p className="text-2xl font-bold text-gray-900">{stat.count}</p>
+                        </div>
+                        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                          <IconComponent className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Query Categories */}
+              <div className="grid md:grid-cols-4 gap-4">
+                {[
+                  { type: 'Document Requests', count: 28, pending: 8, color: 'from-blue-500 to-blue-600' },
+                  { type: 'Application Help', count: 35, pending: 12, color: 'from-green-500 to-green-600' },
+                  { type: 'General Queries', count: 45, pending: 15, color: 'from-purple-500 to-purple-600' },
+                  { type: 'Technical Support', count: 18, pending: 7, color: 'from-amber-500 to-orange-500' },
+                ].map((category, idx) => (
+                  <div key={idx} className="p-5 rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-gray-900 text-sm">{category.type}</h4>
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center`}>
+                        <HelpCircle className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Total</span>
+                        <span className="text-lg font-bold text-gray-900">{category.count}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-600">Pending</span>
+                        <span className="text-sm font-semibold text-amber-600">{category.pending}</span>
+                      </div>
+                    </div>
+                    <button className="btn-secondary w-full mt-3 text-xs">View All</button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Query List */}
+              <div className="space-y-3">
+                {[
+                  {
+                    student: 'Rohit Kumar',
+                    id: '2022CSE001',
+                    queryType: 'Document Request',
+                    subject: 'Request for Bonafide Certificate',
+                    message: 'I need a bonafide certificate for scholarship application. Please process my request.',
+                    status: 'pending',
+                    submitted: 'Dec 12, 2024',
+                    priority: 'normal',
+                  },
+                  {
+                    student: 'Rahul Sharma',
+                    id: '2022CSE015',
+                    queryType: 'Application Help',
+                    subject: 'Semester Registration Issue',
+                    message: 'Unable to register for courses. Getting error message when selecting electives.',
+                    status: 'in_progress',
+                    submitted: 'Dec 11, 2024',
+                    priority: 'high',
+                  },
+                  {
+                    student: 'Nikita Patel',
+                    id: '2022CSE028',
+                    queryType: 'General Query',
+                    subject: 'Fee Payment Confirmation',
+                    message: 'I have paid my semester fees but the status is still showing pending. Please verify.',
+                    status: 'resolved',
+                    submitted: 'Dec 8, 2024',
+                    priority: 'normal',
+                  },
+                  {
+                    student: 'Maheshwari Reddy',
+                    id: '2022CSE042',
+                    queryType: 'Document Request',
+                    subject: 'Transcript Request',
+                    message: 'I need an official transcript for job application. Please provide the procedure.',
+                    status: 'pending',
+                    submitted: 'Dec 13, 2024',
+                    priority: 'normal',
+                  },
+                  {
+                    student: 'Karan Mehta',
+                    id: '2022CSE055',
+                    queryType: 'Technical Support',
+                    subject: 'Login Issue',
+                    message: 'Cannot access my dashboard. Password reset not working. Need immediate help.',
+                    status: 'in_progress',
+                    submitted: 'Dec 13, 2024',
+                    priority: 'high',
+                  },
+                ].map((query, idx) => {
+                  const statusColors = {
+                    pending: 'bg-amber-100 text-amber-700 border-amber-200',
+                    in_progress: 'bg-blue-100 text-blue-700 border-blue-200',
+                    resolved: 'bg-green-100 text-green-700 border-green-200',
+                  }
+
+                  return (
+                    <div key={idx} className="p-5 border border-gray-200 rounded-xl hover:shadow-lg transition-all bg-gradient-to-br from-white to-gray-50">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start space-x-4 flex-1">
+                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                            {query.student.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="font-semibold text-gray-900">{query.student}</h4>
+                              {query.priority === 'high' && (
+                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                                  High Priority
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">{query.id}</p>
+                            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-2">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                  {query.queryType}
+                                </span>
+                                <span className="text-xs text-gray-500">•</span>
+                                <span className="text-sm font-semibold text-gray-900">{query.subject}</span>
+                              </div>
+                              <p className="text-xs text-gray-700 mt-2 line-clamp-2">{query.message}</p>
+                            </div>
+                            <span className="text-xs text-gray-600">Submitted: {query.submitted}</span>
+                          </div>
+                        </div>
+                        <span className={`px-3 py-1 text-xs rounded-full border font-medium ${statusColors[query.status as keyof typeof statusColors]}`}>
+                          {query.status === 'in_progress' ? 'In Progress' : query.status.charAt(0).toUpperCase() + query.status.slice(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                        <button className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1">
+                          <Eye className="w-3 h-3" />
+                          <span>View Full Query</span>
+                        </button>
+                        {query.status === 'pending' && (
+                          <div className="flex items-center space-x-2">
+                            <button className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center space-x-1">
+                              <CheckCircle className="w-3 h-3" />
+                              <span>Resolve</span>
+                            </button>
+                            <button className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1">
+                              <MessageSquare className="w-3 h-3" />
+                              <span>Reply</span>
+                            </button>
+                          </div>
+                        )}
+                        {query.status === 'in_progress' && (
+                          <button className="text-xs text-purple-600 hover:text-purple-700 font-medium flex items-center space-x-1">
+                            <Activity className="w-3 h-3" />
+                            <span>Update Status</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Chairperson Office Tab */}
+          {selectedTab === 'chairperson' && (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Chairperson Office</h3>
+                  <p className="text-sm text-gray-600">
+                    Manage chairperson notifications, tasks, approvals, and administrative communications.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button className="btn-secondary flex items-center space-x-2">
+                    <Filter className="w-4 h-4" />
+                    <span>Filter</span>
+                  </button>
+                  <button className="btn-secondary flex items-center space-x-2">
+                    <Download className="w-4 h-4" />
+                    <span>Export</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Chairperson Stats */}
+              <div className="grid md:grid-cols-4 gap-4">
+                {[
+                  { label: 'Pending Tasks', count: 15, color: 'from-amber-500 to-orange-500', icon: Clock },
+                  { label: 'Notifications', count: 28, color: 'from-blue-500 to-blue-600', icon: Bell },
+                  { label: 'Approvals Required', count: 12, color: 'from-purple-500 to-purple-600', icon: UserCheck },
+                  { label: 'Completed Tasks', count: 89, color: 'from-green-500 to-emerald-600', icon: CheckCircle },
+                ].map((stat, idx) => {
+                  const IconComponent = stat.icon
+                  return (
+                    <div key={idx} className="p-5 rounded-xl bg-gradient-to-br from-white to-gray-50 border border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-gray-600 mb-1">{stat.label}</p>
+                          <p className="text-2xl font-bold text-gray-900">{stat.count}</p>
+                        </div>
+                        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                          <IconComponent className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Notifications Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900">Recent Notifications</h4>
+                    <p className="text-sm text-gray-600">Important updates and alerts for the chairperson</p>
+                  </div>
+                  <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</button>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    {
+                      type: 'Approval Required',
+                      title: 'Internal Marks Finalization - CSE Batch 1',
+                      message: 'Dr. Ritu Makani has submitted internal marks for final approval. Review required.',
+                      time: '2 hours ago',
+                      priority: 'high',
+                      status: 'unread',
+                    },
+                    {
+                      type: 'Task Assignment',
+                      title: 'Accreditation Documentation Review',
+                      message: 'NAAC accreditation documents need chairperson review before submission deadline.',
+                      time: '5 hours ago',
+                      priority: 'medium',
+                      status: 'unread',
+                    },
+                    {
+                      type: 'Student Appeal',
+                      title: 'Eligibility Appeal - Rohit Kumar',
+                      message: 'Student has submitted an appeal for exam eligibility. Requires chairperson decision.',
+                      time: '1 day ago',
+                      priority: 'high',
+                      status: 'read',
+                    },
+                    {
+                      type: 'Department Meeting',
+                      title: 'Faculty Meeting Scheduled',
+                      message: 'Monthly faculty meeting scheduled for Dec 20, 2024. Agenda items need approval.',
+                      time: '2 days ago',
+                      priority: 'normal',
+                      status: 'read',
+                    },
+                  ].map((notification, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-5 border rounded-xl hover:shadow-lg transition-all bg-gradient-to-br from-white to-gray-50 ${
+                        notification.status === 'unread' ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            notification.status === 'unread' ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}></div>
+                          <span className={`px-2 py-0.5 text-xs rounded font-medium ${
+                            notification.type === 'Approval Required' ? 'bg-purple-100 text-purple-700' :
+                            notification.type === 'Task Assignment' ? 'bg-blue-100 text-blue-700' :
+                            notification.type === 'Student Appeal' ? 'bg-rose-100 text-rose-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {notification.type}
+                          </span>
+                          {notification.priority === 'high' && (
+                            <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">
+                              High Priority
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500">{notification.time}</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-1">{notification.title}</h5>
+                      <p className="text-sm text-gray-600 mb-3">{notification.message}</p>
+                      <div className="flex items-center space-x-2">
+                        <button className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1">
+                          <Eye className="w-3 h-3" />
+                          <span>View Details</span>
+                        </button>
+                        {notification.type === 'Approval Required' && (
+                          <button className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center space-x-1">
+                            <CheckCircle className="w-3 h-3" />
+                            <span>Approve</span>
+                          </button>
+                        )}
+                        <button className="text-xs text-gray-600 hover:text-gray-700 font-medium flex items-center space-x-1">
+                          <Bell className="w-3 h-3" />
+                          <span>Mark as Read</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tasks Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 className="font-semibold text-lg text-gray-900">Assigned Tasks</h4>
+                    <p className="text-sm text-gray-600">Tasks requiring chairperson attention</p>
+                  </div>
+                  <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">View All Tasks</button>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      title: 'Review and Approve Department Budget 2025',
+                      assignee: 'Finance Committee',
+                      dueDate: 'Dec 20, 2024',
+                      priority: 'high',
+                      status: 'pending',
+                      progress: 0,
+                    },
+                    {
+                      title: 'Faculty Recruitment - Interview Panel',
+                      assignee: 'HR Committee',
+                      dueDate: 'Dec 18, 2024',
+                      priority: 'high',
+                      status: 'in_progress',
+                      progress: 60,
+                    },
+                    {
+                      title: 'Accreditation Report Final Review',
+                      assignee: 'Quality Assurance',
+                      dueDate: 'Dec 25, 2024',
+                      priority: 'critical',
+                      status: 'pending',
+                      progress: 0,
+                    },
+                    {
+                      title: 'Annual Department Report Preparation',
+                      assignee: 'Administration',
+                      dueDate: 'Dec 30, 2024',
+                      priority: 'medium',
+                      status: 'in_progress',
+                      progress: 40,
+                    },
+                  ].map((task, idx) => (
+                    <div key={idx} className="p-5 border border-gray-200 rounded-xl hover:shadow-lg transition-all bg-gradient-to-br from-white to-gray-50">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h5 className="font-semibold text-gray-900">{task.title}</h5>
+                            <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                              task.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                              task.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              {task.priority}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">Assigned by: {task.assignee}</p>
+                          <div className="flex items-center space-x-3 text-xs text-gray-600">
+                            <span className="flex items-center space-x-1">
+                              <Clock className="w-3 h-3" />
+                              <span>Due: {task.dueDate}</span>
+                            </span>
+                            <span>•</span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              task.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              {task.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {task.status === 'in_progress' && (
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                            <span>Progress</span>
+                            <span>{task.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-500 h-2 rounded-full"
+                              style={{ width: `${task.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex items-center space-x-2 pt-3 border-t border-gray-200">
+                        <button className="btn-primary text-xs px-4 py-2 flex-1">View Task</button>
+                        <button className="btn-secondary text-xs px-4 py-2 flex-1">Update Status</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div>
+                <h4 className="font-semibold text-lg text-gray-900 mb-4">Quick Actions</h4>
+                <div className="grid md:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Send Announcement', icon: Send, color: 'from-blue-500 to-blue-600' },
+                    { label: 'Schedule Meeting', icon: Calendar, color: 'from-green-500 to-green-600' },
+                    { label: 'Review Reports', icon: FileText, color: 'from-purple-500 to-purple-600' },
+                    { label: 'Contact Faculty', icon: Mail, color: 'from-amber-500 to-orange-500' },
+                  ].map((action, idx) => {
+                    const IconComponent = action.icon
+                    return (
+                      <button
+                        key={idx}
+                        className="p-5 rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 hover:shadow-lg transition-all text-left"
+                      >
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-3`}>
+                          <IconComponent className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="font-semibold text-sm text-gray-900">{action.label}</p>
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -1758,11 +2232,10 @@ export default function AdminDashboard() {
                             <p className="font-semibold text-sm text-gray-900">{fee.student}</p>
                             <p className="text-xs text-gray-600">{fee.id}</p>
                           </div>
-                          <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                            fee.status === 'paid' ? 'bg-green-100 text-green-700' :
+                          <span className={`px-3 py-1 text-xs rounded-full font-medium ${fee.status === 'paid' ? 'bg-green-100 text-green-700' :
                             fee.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
+                              'bg-red-100 text-red-700'
+                            }`}>
                             {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
                           </span>
                         </div>
@@ -1799,11 +2272,10 @@ export default function AdminDashboard() {
                             <p className="font-semibold text-sm text-gray-900">{fee.student}</p>
                             <p className="text-xs text-gray-600">{fee.id}</p>
                           </div>
-                          <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                            fee.status === 'paid' ? 'bg-green-100 text-green-700' :
+                          <span className={`px-3 py-1 text-xs rounded-full font-medium ${fee.status === 'paid' ? 'bg-green-100 text-green-700' :
                             fee.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
+                              'bg-red-100 text-red-700'
+                            }`}>
                             {fee.status.charAt(0).toUpperCase() + fee.status.slice(1)}
                           </span>
                         </div>
@@ -2359,9 +2831,8 @@ export default function AdminDashboard() {
                           <div className="w-20">
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div
-                                className={`h-2 rounded-full ${
-                                  course.status === 'full' ? 'bg-red-500' : 'bg-green-500'
-                                }`}
+                                className={`h-2 rounded-full ${course.status === 'full' ? 'bg-red-500' : 'bg-green-500'
+                                  }`}
                                 style={{ width: `${(course.enrolled / course.capacity) * 100}%` }}
                               ></div>
                             </div>
@@ -2457,9 +2928,8 @@ export default function AdminDashboard() {
                           <span>Registered: {exam.registered}/{exam.eligible}</span>
                         </div>
                       </div>
-                      <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                        exam.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
+                      <span className={`px-3 py-1 text-xs rounded-full font-medium ${exam.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                        }`}>
                         {exam.status === 'open' ? 'Registration Open' : 'Registration Closed'}
                       </span>
                     </div>
