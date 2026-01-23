@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --jira-blue: #0052CC;
+  --jira-blue-hover: #0065FF;
+  --jira-gray: #F4F5F7;
+  --jira-text: #172B4D;
+  --jira-border: #DFE1E6;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  color: var(--jira-text);
+  background-color: #F4F5F7;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Jira-like scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F4F5F7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C1C7D0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #97A0AF;
+}
+
+/* Custom button styles */
+.btn-primary {
+  @apply bg-jira-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-jira-blue-700 transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-jira-gray-200 text-jira-gray-800 px-4 py-2 rounded font-medium hover:bg-jira-gray-300 transition-colors;
+}
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-jira-gray-300 p-6;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-3 py-2 border border-jira-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-jira-blue-500 focus:border-transparent;
+}
