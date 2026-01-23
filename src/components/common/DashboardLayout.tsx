@@ -214,8 +214,10 @@ export default function DashboardLayout({ children, role, roleLabel, navItems, a
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
-          {children}
+        <main className="flex-1 p-6 overflow-x-hidden">
+          <div className="max-w-full overflow-x-hidden">
+            {children}
+          </div>
         </main>
       </div>
 

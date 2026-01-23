@@ -110,7 +110,7 @@ export default function AdminDashboard() {
 
   return (
     <DashboardLayout role="admin" roleLabel="Administration Dashboard" navItems={navItems}>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-full overflow-x-hidden">
         {/* Header */}
         <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-6">
           <div className="absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_70%_30%,rgba(59,130,246,0.18),transparent_55%)]" />
@@ -141,55 +141,57 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-4">
-          <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Active Workflows</p>
-                <p className="text-3xl font-bold">247</p>
-                <p className="text-xs opacity-80 mt-1">+12 from last week</p>
-              </div>
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Students under Watch</p>
-                <p className="text-3xl font-bold">23</p>
-                <p className="text-xs opacity-80 mt-1">-3 improved this week</p>
-              </div>
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6" />
+        <div className="overflow-x-auto -mx-6 px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-max lg:min-w-0">
+            <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow min-w-[280px] lg:min-w-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Active Workflows</p>
+                  <p className="text-3xl font-bold">247</p>
+                  <p className="text-xs opacity-80 mt-1">+12 from last week</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <FileText className="w-6 h-6" />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white p-5 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Delayed Processes</p>
-                <p className="text-3xl font-bold">12</p>
-                <p className="text-xs opacity-80 mt-1">Requires attention</p>
-              </div>
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <Clock className="w-6 h-6" />
+            <div className="rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow min-w-[280px] lg:min-w-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Students under Watch</p>
+                  <p className="text-3xl font-bold">23</p>
+                  <p className="text-xs opacity-80 mt-1">-3 improved this week</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Locked Marks</p>
-                <p className="text-3xl font-bold">18/20</p>
-                <p className="text-xs opacity-80 mt-1">90% completion</p>
+            <div className="rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white p-5 shadow-lg hover:shadow-xl transition-shadow min-w-[280px] lg:min-w-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Delayed Processes</p>
+                  <p className="text-3xl font-bold">12</p>
+                  <p className="text-xs opacity-80 mt-1">Requires attention</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Clock className="w-6 h-6" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6" />
+            </div>
+
+            <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white p-5 shadow-lg hover:shadow-xl transition-shadow min-w-[280px] lg:min-w-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wide opacity-80 mb-1">Locked Marks</p>
+                  <p className="text-3xl font-bold">18/20</p>
+                  <p className="text-xs opacity-80 mt-1">90% completion</p>
+                </div>
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Shield className="w-6 h-6" />
+                </div>
               </div>
             </div>
           </div>
@@ -198,19 +200,21 @@ export default function AdminDashboard() {
         {/* Main Content Tabs */}
         <div className="card rounded-2xl">
           <div className="border-b border-jira-gray-200 mb-6">
-            <div className="flex space-x-6 overflow-x-auto">
-              {['overview', 'scrum', 'risk', 'analytics', 'workflows', 'queries', 'chairperson', 'registration', 'fees', 'semester', 'documents', 'details', 'course', 'exam', 'policy'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setSelectedTab(tab)}
-                  className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors whitespace-nowrap ${selectedTab === tab
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-jira-gray-600 hover:text-jira-gray-900'
-                    }`}
-                >
-                  {tab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                </button>
-              ))}
+            <div className="overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#C1C7D0 #F4F5F7' }}>
+              <div className="flex space-x-6 min-w-max px-1 pb-1">
+                {['overview', 'scrum', 'risk', 'analytics', 'workflows', 'queries', 'chairperson', 'registration', 'fees', 'semester', 'documents', 'details', 'course', 'exam', 'policy'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setSelectedTab(tab)}
+                    className={`pb-4 px-3 font-medium text-sm border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${selectedTab === tab
+                      ? 'border-blue-600 text-blue-600'
+                      : 'border-transparent text-jira-gray-600 hover:text-jira-gray-900'
+                      }`}
+                  >
+                    {tab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
