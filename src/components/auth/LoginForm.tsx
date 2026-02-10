@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserRole } from '@/types'
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react'
+import apiClient from '@/lib/api-client'
 
 interface LoginFormProps {
   role: UserRole
@@ -41,13 +42,22 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
     e.preventDefault()
     setLoading(true)
     
-    // Simulate login
-    setTimeout(() => {
-      // Store user role in localStorage (in real app, this would be handled by auth)
-      localStorage.setItem('userRole', role)
-      localStorage.setItem('userEmail', email)
+    try {
+      const result = await apiClient.login({ email, password })
+      
+      // Store user info in localStorage for compatibility
+      localStorage.setItem('userRole', result.user.role)
+      localStorage.setItem('userEmail', result.user.email)
+      
+      // Redirect to dashboard
       router.push(`/dashboard/${role}`)
-    }, 1000)
+    } catch (error) {
+      console.error('Login failed:', error)
+      // Show error message (you could add a toast notification here)
+      alert('Login failed. Please check your credentials and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
