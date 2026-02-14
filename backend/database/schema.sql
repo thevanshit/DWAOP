@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS workflow_attachments CASCADE;
 DROP TABLE IF EXISTS workflow_transitions CASCADE;
 DROP TABLE IF EXISTS student_track_reports CASCADE;
 DROP TABLE IF EXISTS assignment_submissions CASCADE;
+DROP TABLE IF EXISTS attendance_records CASCADE;
 DROP TABLE IF EXISTS attendance_sessions CASCADE;
 DROP TABLE IF EXISTS workflows CASCADE;
 DROP TABLE IF EXISTS leave_requests CASCADE;
@@ -23,23 +24,28 @@ DROP TABLE IF EXISTS roles CASCADE;
 DROP TABLE IF EXISTS permissions CASCADE;
 DROP TABLE IF EXISTS role_permissions CASCADE;
 
+-- Drop Enums
+DROP TYPE IF EXISTS workflow_type CASCADE;
+DROP TYPE IF EXISTS workflow_status CASCADE;
+DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS leave_type CASCADE;
+DROP TYPE IF EXISTS eligibility_status CASCADE;
+
 -- Enums for workflow states and types
 CREATE TYPE workflow_type AS ENUM (
-    'attendance',
-    'assignment', 
-    'marks',
-    'leave',
-    'task'
+    'attendance_session',
+    'assignment',
+    'internal_marks',
+    'leave_request',
+    'student_track_report'
 );
 
 CREATE TYPE workflow_status AS ENUM (
     'created',
-    'in_progress', 
     'under_review',
-    'finalised',
-    'locked',
-    'done',
-    'delayed'
+    'approved',
+    'rejected',
+    'locked'
 );
 
 CREATE TYPE user_role AS ENUM (
@@ -112,6 +118,8 @@ CREATE TABLE departments (
 );
 
 -- Users Table
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -130,6 +138,19 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Refresh Tokens Table
+CREATE TABLE refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id)
+);
+
+CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
 
 -- Batches Table
 CREATE TABLE batches (
@@ -199,18 +220,21 @@ CREATE TABLE workflows (
     description TEXT,
     creator_id UUID REFERENCES users(id) NOT NULL,
     assignee_id UUID REFERENCES users(id),
+    department_id UUID REFERENCES departments(id) NOT NULL,
     priority VARCHAR(20) DEFAULT 'medium',
     due_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     finalized_at TIMESTAMP WITH TIME ZONE,
     locked_at TIMESTAMP WITH TIME ZONE,
-    metadata JSONB DEFAULT '{}',
-    INDEX idx_workflows_type (type),
-    INDEX idx_workflows_status (status),
-    INDEX idx_workflows_assignee (assignee_id),
-    INDEX idx_workflows_due_date (due_date)
+    metadata JSONB DEFAULT '{}'
 );
+
+CREATE INDEX idx_workflows_type ON workflows(type);
+CREATE INDEX idx_workflows_status ON workflows(status);
+CREATE INDEX idx_workflows_assignee ON workflows(assignee_id);
+CREATE INDEX idx_workflows_department ON workflows(department_id);
+CREATE INDEX idx_workflows_due_date ON workflows(due_date);
 
 -- Workflow Transitions Table (Audit Trail)
 CREATE TABLE workflow_transitions (
@@ -221,10 +245,11 @@ CREATE TABLE workflow_transitions (
     transitioned_by UUID REFERENCES users(id) NOT NULL,
     reason TEXT,
     transitioned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    metadata JSONB DEFAULT '{}',
-    INDEX idx_transitions_workflow (workflow_id),
-    INDEX idx_transitions_user (transitioned_by)
+    metadata JSONB DEFAULT '{}'
 );
+
+CREATE INDEX idx_transitions_workflow ON workflow_transitions(workflow_id);
+CREATE INDEX idx_transitions_user ON workflow_transitions(transitioned_by);
 
 -- Workflow Comments Table
 CREATE TABLE workflow_comments (
@@ -234,10 +259,11 @@ CREATE TABLE workflow_comments (
     comment TEXT NOT NULL,
     is_internal BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_comments_workflow (workflow_id),
-    INDEX idx_comments_commenter (commenter_id)
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_comments_workflow ON workflow_comments(workflow_id);
+CREATE INDEX idx_comments_commenter ON workflow_comments(commenter_id);
 
 -- Workflow Attachments Table
 CREATE TABLE workflow_attachments (
@@ -249,10 +275,11 @@ CREATE TABLE workflow_attachments (
     file_path VARCHAR(500) NOT NULL,
     file_size BIGINT NOT NULL,
     mime_type VARCHAR(100) NOT NULL,
-    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_attachments_workflow (workflow_id),
-    INDEX idx_attachments_uploader (uploader_id)
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_attachments_workflow ON workflow_attachments(workflow_id);
+CREATE INDEX idx_attachments_uploader ON workflow_attachments(uploader_id);
 
 -- Specific Workflow Type Tables
 
@@ -286,10 +313,11 @@ CREATE TABLE attendance_records (
     marked_by UUID REFERENCES users(id),
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(session_id, student_id),
-    INDEX idx_attendance_session (session_id),
-    INDEX idx_attendance_student (student_id)
+    unique(session_id, student_id)
 );
+
+CREATE INDEX idx_attendance_session ON attendance_records(session_id);
+CREATE INDEX idx_attendance_student ON attendance_records(student_id);
 
 -- Assignments Table
 CREATE TABLE assignments (
@@ -328,10 +356,11 @@ CREATE TABLE assignment_submissions (
     status VARCHAR(20) DEFAULT 'not_submitted', -- 'not_submitted', 'submitted', 'evaluated', 'returned'
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(assignment_id, student_id),
-    INDEX idx_submissions_assignment (assignment_id),
-    INDEX idx_submissions_student (student_id)
+    UNIQUE(assignment_id, student_id)
 );
+
+CREATE INDEX idx_submissions_assignment ON assignment_submissions(assignment_id);
+CREATE INDEX idx_submissions_student ON assignment_submissions(student_id);
 
 -- Internal Marks Table
 CREATE TABLE internal_marks (
@@ -355,10 +384,11 @@ CREATE TABLE internal_marks (
     locked_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, subject_id, batch_id),
-    INDEX idx_internal_marks_student (student_id),
-    INDEX idx_internal_marks_subject (subject_id)
+    UNIQUE(student_id, subject_id, batch_id)
 );
+
+CREATE INDEX idx_internal_marks_student ON internal_marks(student_id);
+CREATE INDEX idx_internal_marks_subject ON internal_marks(subject_id);
 
 -- Leave Requests Table
 CREATE TABLE leave_requests (
@@ -403,10 +433,11 @@ CREATE TABLE student_track_reports (
     locked_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, batch_id, semester),
-    INDEX idx_track_reports_student (student_id),
-    INDEX idx_track_reports_status (status)
+    UNIQUE(student_id, batch_id, semester)
 );
+
+CREATE INDEX idx_track_reports_student ON student_track_reports(student_id);
+CREATE INDEX idx_track_reports_status ON student_track_reports(status);
 
 -- Audit Logs Table (Immutable History)
 CREATE TABLE audit_logs (
@@ -420,11 +451,12 @@ CREATE TABLE audit_logs (
     changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     ip_address INET,
     user_agent TEXT,
-    metadata JSONB DEFAULT '{}',
-    INDEX idx_audit_table_record (table_name, record_id),
-    INDEX idx_audit_user (changed_by),
-    INDEX idx_audit_changed_at (changed_at)
+    metadata JSONB DEFAULT '{}'
 );
+
+CREATE INDEX idx_audit_table_record ON audit_logs(table_name, record_id);
+CREATE INDEX idx_audit_user ON audit_logs(changed_by);
+CREATE INDEX idx_audit_changed_at ON audit_logs(changed_at);
 
 -- Create indexes for performance
 CREATE INDEX idx_users_email ON users(email);
@@ -479,13 +511,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply audit triggers to critical tables
-CREATE TRIGGER audit_users_trigger AFTER INSERT OR UPDATE OR DELETE ON users FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-CREATE TRIGGER audit_workflows_trigger AFTER INSERT OR UPDATE OR DELETE ON workflows FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-CREATE TRIGGER audit_attendance_sessions_trigger AFTER INSERT OR UPDATE OR DELETE ON attendance_sessions FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-CREATE TRIGGER audit_assignments_trigger AFTER INSERT OR UPDATE OR DELETE ON assignments FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-CREATE TRIGGER audit_internal_marks_trigger AFTER INSERT OR UPDATE OR DELETE ON internal_marks FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-CREATE TRIGGER audit_leave_requests_trigger AFTER INSERT OR UPDATE OR DELETE ON leave_requests FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
-CREATE TRIGGER audit_student_track_reports_trigger AFTER INSERT OR UPDATE OR DELETE ON student_track_reports FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_users_trigger AFTER INSERT OR UPDATE OR DELETE ON users FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_workflows_trigger AFTER INSERT OR UPDATE OR DELETE ON workflows FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_attendance_sessions_trigger AFTER INSERT OR UPDATE OR DELETE ON attendance_sessions FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_assignments_trigger AFTER INSERT OR UPDATE OR DELETE ON assignments FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_internal_marks_trigger AFTER INSERT OR UPDATE OR DELETE ON internal_marks FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_leave_requests_trigger AFTER INSERT OR UPDATE OR DELETE ON leave_requests FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- CREATE TRIGGER audit_student_track_reports_trigger AFTER INSERT OR UPDATE OR DELETE ON student_track_reports FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
 
 -- Create Row Level Security (RLS) for multi-tenant data isolation
 ALTER TABLE workflows ENABLE ROW LEVEL SECURITY;

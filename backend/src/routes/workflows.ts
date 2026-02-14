@@ -22,16 +22,18 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           error: 'Authentication required'
         });
+        return;
       }
 
       const { type, title, description, assigneeId, priority, dueDate, metadata } = req.body;
@@ -43,7 +45,7 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
           id: req.user.id,
           role: req.user.role,
           permissions: req.user.permissions,
-          attributes: req.user.attributes
+          departmentId: req.user.departmentId
         },
         metadata: {}
       };
@@ -54,7 +56,8 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
         assigneeId,
         priority,
         dueDate: dueDate ? new Date(dueDate) : undefined,
-        metadata
+        metadata,
+        departmentId: req.user.departmentId
       }, context);
 
       res.status(201).json({
@@ -63,9 +66,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
       });
 
       logger.info(`Workflow created: ${workflow.id} of type ${type}`);
+      return;
     } catch (error) {
       logger.error('Workflow creation failed', error);
       next(error);
+      return;
     }
   });
 
@@ -85,10 +90,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       const { type, assigneeId, status, priority, departmentId, page = 1, limit = 20 } = req.query;
@@ -120,9 +126,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
           }
         }
       });
+      return;
     } catch (error) {
       logger.error('Get workflows failed', error);
       next(error);
+      return;
     }
   });
 
@@ -132,22 +140,25 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
    */
   router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       const workflow = await workflowEngine.getWorkflow(id);
       if (!workflow) {
-        return res.status(404).json({
+        res.status(404).json({
           error: 'Workflow not found'
         });
+        return;
       }
 
       res.json({
         success: true,
         data: { workflow }
       });
+      return;
     } catch (error) {
       logger.error('Get workflow failed', error);
       next(error);
+      return;
     }
   });
 
@@ -162,19 +173,21 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           error: 'Authentication required'
         });
+        return;
       }
 
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { toState, reason } = req.body;
 
       const context = {
@@ -182,13 +195,12 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
         user: {
           id: req.user.id,
           role: req.user.role,
-          permissions: req.user.permissions,
-          attributes: req.user.attributes
+          permissions: req.user.permissions
         },
         metadata: {}
       };
 
-      const workflow = await workflowEngine.transitionWorkflow(id, toState, context, reason);
+      const workflow = await workflowEngine.transitionWorkflow(id, toState, context, reason || '');
 
       res.json({
         success: true,
@@ -196,9 +208,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
       });
 
       logger.info(`Workflow ${id} transitioned to ${toState} by user ${req.user.id}`);
+      return;
     } catch (error) {
       logger.error('Workflow transition failed', error);
       next(error);
+      return;
     }
   });
 
@@ -206,7 +220,7 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
    * GET /api/workflows/types
    * Get available workflow types
    */
-  router.get('/types', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/type-definitions', async (req: Request, res: Response, next: NextFunction) => {
     try {
       // This would return the workflow types defined in the system
       const workflowTypes = [
@@ -246,9 +260,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
         success: true,
         data: { workflowTypes }
       });
+      return;
     } catch (error) {
       logger.error('Get workflow types failed', error);
       next(error);
+      return;
     }
   });
 
@@ -258,7 +274,7 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
    */
   router.get('/:id/history', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       // This would query the workflow_transitions table
       // For now, returning a placeholder
@@ -277,9 +293,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
         success: true,
         data: { history }
       });
+      return;
     } catch (error) {
       logger.error('Get workflow history failed', error);
       next(error);
+      return;
     }
   });
 
@@ -289,19 +307,21 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
    */
   router.get('/:id/comments', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       // This would query the workflow_comments table
       // For now, returning a placeholder
-      const comments = [];
+      const comments: any[] = [];
 
       res.json({
         success: true,
         data: { comments }
       });
+      return;
     } catch (error) {
       logger.error('Get workflow comments failed', error);
       next(error);
+      return;
     }
   });
 
@@ -316,19 +336,21 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           error: 'Authentication required'
         });
+        return;
       }
 
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { comment, isInternal } = req.body;
 
       // This would insert into workflow_comments table
@@ -348,9 +370,11 @@ export const createWorkflowRoutes = (workflowEngine: WorkflowEngine): Router => 
       });
 
       logger.info(`Comment added to workflow ${id} by user ${req.user.id}`);
+      return;
     } catch (error) {
       logger.error('Add workflow comment failed', error);
       next(error);
+      return;
     }
   });
 

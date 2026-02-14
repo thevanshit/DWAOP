@@ -12,18 +12,6 @@ export interface AuthUser {
   lastName: string;
   role: string;
   departmentId?: string;
-  attributes: Record<string, any>;
-}
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
 }
 
 export interface JwtPayload {
@@ -31,52 +19,61 @@ export interface JwtPayload {
   email: string;
   role: string;
   permissions: string[];
-  attributes: Record<string, any>;
+  departmentId?: string;
 }
 
 export class AuthService {
   private db: Database;
   private rbac: RBACService;
 
-  constructor(db: Database, rbac: RBACService) {
+  constructor(db: Database, rbacService: RBACService) {
     this.db = db;
-    this.rbac = rbac;
+    this.rbac = rbacService;
   }
 
   /**
-   * Authenticate user with email and password
+   * Verify access token
    */
-  public async login(credentials: LoginCredentials): Promise<AuthTokens & { user: AuthUser }> {
+  public verifyToken(token: string): JwtPayload {
+    return jwt.verify(token, config.jwt.secret as string) as JwtPayload;
+  }
+
+  /**
+   * Login user
+   */
+  public async login(credentials: { email: string; password: string }): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    user: AuthUser;
+  }> {
     try {
       // Find user by email
       const userResult = await this.db.query(
         `SELECT id, email, password_hash, first_name, last_name, role, 
-                department_id, attributes, is_active, email_verified 
+                department_id, is_active, email_verified 
          FROM users WHERE email = $1`,
         [credentials.email.toLowerCase()]
       );
 
-      if (!userResult.rows[0]) {
-        throw new Error('Invalid credentials');
+      if (userResult.rows.length === 0) {
+        throw new Error('Invalid email or password');
       }
 
       const user = userResult.rows[0];
 
-      // Check if user is active
       if (!user.is_active) {
         throw new Error('Account is disabled');
       }
 
-      // Check if email is verified
-      if (!user.email_verified) {
-        throw new Error('Email not verified');
+      // Verify password
+      const isValidPassword = await bcrypt.compare(credentials.password, user.password_hash);
+      if (!isValidPassword) {
+        throw new Error('Invalid email or password');
       }
 
-      // Verify password
-      const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash);
-      if (!isPasswordValid) {
-        throw new Error('Invalid credentials');
-      }
+      // Update last login
+      await this.updateLastLogin(user.id);
 
       // Get user permissions
       const permissions = await this.rbac.getUserPermissions(user.id);
@@ -87,17 +84,14 @@ export class AuthService {
         email: user.email,
         role: user.role,
         permissions: Array.from(permissions),
-        attributes: user.attributes || {}
+        departmentId: user.department_id
       };
 
       // Generate tokens
       const accessToken = this.generateAccessToken(payload);
       const refreshToken = this.generateRefreshToken(payload);
 
-      // Update last login
-      await this.updateLastLogin(user.id);
-
-      // Store refresh token (optional - for token revocation)
+      // Store refresh token
       await this.storeRefreshToken(user.id, refreshToken);
 
       logger.info(`User logged in: ${user.email}`);
@@ -113,7 +107,6 @@ export class AuthService {
           lastName: user.last_name,
           role: user.role,
           departmentId: user.department_id,
-          attributes: user.attributes || {}
         }
       };
     } catch (error) {
@@ -123,20 +116,24 @@ export class AuthService {
   }
 
   /**
-   * Refresh access token using refresh token
+   * Refresh access token
    */
-  public async refreshToken(refreshToken: string): Promise<AuthTokens> {
+  public async refresh(refreshToken: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+  }> {
     try {
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as JwtPayload;
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret as string) as JwtPayload;
 
-      // Check if refresh token is still valid (stored in database)
+      // Check if token exists in database and is valid
       const isValid = await this.validateRefreshToken(decoded.userId, refreshToken);
       if (!isValid) {
         throw new Error('Invalid refresh token');
       }
 
-      // Get updated user permissions
+      // Get current permissions
       const permissions = await this.rbac.getUserPermissions(decoded.userId);
 
       // Create new payload
@@ -145,20 +142,21 @@ export class AuthService {
         email: decoded.email,
         role: decoded.role,
         permissions: Array.from(permissions),
-        attributes: decoded.attributes
+        departmentId: decoded.departmentId
       };
 
       // Generate new tokens
       const newAccessToken = this.generateAccessToken(payload);
       const newRefreshToken = this.generateRefreshToken(payload);
 
-      // Store new refresh token
+      // Rotate refresh token
+      await this.removeRefreshToken(decoded.userId, refreshToken);
       await this.storeRefreshToken(decoded.userId, newRefreshToken);
 
       return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
-        expiresIn: 3600
+        expiresIn: 3600, // 1 hour
       };
     } catch (error) {
       logger.error('Token refresh failed', error);
@@ -167,12 +165,13 @@ export class AuthService {
   }
 
   /**
-   * Logout user (invalidate refresh token)
+   * Logout user
    */
   public async logout(userId: string, refreshToken: string): Promise<void> {
     try {
-      // Remove refresh token from database
-      await this.removeRefreshToken(userId, refreshToken);
+      if (refreshToken) {
+        await this.removeRefreshToken(userId, refreshToken);
+      }
       logger.info(`User logged out: ${userId}`);
     } catch (error) {
       logger.error('Logout failed', error);
@@ -181,19 +180,7 @@ export class AuthService {
   }
 
   /**
-   * Verify JWT token and return payload
-   */
-  public verifyToken(token: string): JwtPayload {
-    try {
-      const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
-      return decoded;
-    } catch (error) {
-      throw new Error('Invalid token');
-    }
-  }
-
-  /**
-   * Create new user account
+   * Create new user
    */
   public async createUser(userData: {
     email: string;
@@ -202,16 +189,15 @@ export class AuthService {
     lastName: string;
     role: string;
     departmentId?: string;
-    attributes?: Record<string, any>;
   }): Promise<AuthUser> {
     try {
-      // Check if user already exists
+      // Check if user exists
       const existingUser = await this.db.query(
         'SELECT id FROM users WHERE email = $1',
         [userData.email.toLowerCase()]
       );
 
-      if (existingUser.rows[0]) {
+      if (existingUser.rows.length > 0) {
         throw new Error('User already exists');
       }
 
@@ -221,9 +207,9 @@ export class AuthService {
       // Create user
       const result = await this.db.query(
         `INSERT INTO users (email, password_hash, first_name, last_name, role, 
-                           department_id, attributes, is_active, email_verified, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-         RETURNING id, email, first_name, last_name, role, department_id, attributes`,
+                           department_id, is_active, email_verified, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING id, email, first_name, last_name, role, department_id`,
         [
           userData.email.toLowerCase(),
           passwordHash,
@@ -231,7 +217,6 @@ export class AuthService {
           userData.lastName,
           userData.role,
           userData.departmentId,
-          JSON.stringify(userData.attributes || {}),
           true, // is_active
           false, // email_verified
           new Date(),
@@ -241,8 +226,6 @@ export class AuthService {
 
       const user = result.rows[0];
 
-      logger.info(`User created: ${user.email}`);
-
       return {
         id: user.id,
         email: user.email,
@@ -250,7 +233,6 @@ export class AuthService {
         lastName: user.last_name,
         role: user.role,
         departmentId: user.department_id,
-        attributes: user.attributes || {}
       };
     } catch (error) {
       logger.error('User creation failed', error);
@@ -302,8 +284,8 @@ export class AuthService {
    * Generate access token
    */
   private generateAccessToken(payload: JwtPayload): string {
-    return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+    return jwt.sign(payload, config.jwt.secret as string, {
+      expiresIn: config.jwt.expiresIn as any,
       issuer: 'dwaop-platform',
       audience: 'dwaop-users'
     });
@@ -313,8 +295,8 @@ export class AuthService {
    * Generate refresh token
    */
   private generateRefreshToken(payload: JwtPayload): string {
-    return jwt.sign(payload, config.jwt.refreshSecret, {
-      expiresIn: config.jwt.refreshExpiresIn,
+    return jwt.sign(payload, config.jwt.refreshSecret as string, {
+      expiresIn: config.jwt.refreshExpiresIn as any,
       issuer: 'dwaop-platform',
       audience: 'dwaop-users'
     });

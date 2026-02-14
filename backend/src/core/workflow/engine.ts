@@ -14,58 +14,40 @@ export class WorkflowEngine {
   /**
    * Initialize all workflow types from database
    */
+  /**
+   * Initialize all workflow types (Hardcoded for now as workflow_types table is missing)
+   */
   private async initializeWorkflowTypes(): Promise<void> {
-    try {
-      const result = await this.db.query(`
-        SELECT 
-          wt.*,
-          json_agg(
-            json_build_object(
-              'id', ws.id,
-              'name', ws.name,
-              'description', ws.description,
-              'is_final', ws.is_final,
-              'is_initial', ws.is_initial,
-              'permissions', ws.permissions,
-              'timeouts', ws.timeouts
-            )
-          ) as states,
-          json_agg(
-            json_build_object(
-              'id', wt_trans.id,
-              'from', wt_trans.from_state,
-              'to', wt_trans.to_state,
-              'name', wt_trans.name,
-              'description', wt_trans.description,
-              'guard', wt_trans.guard,
-              'conditions', wt_trans.conditions,
-              'actions', wt_trans.actions
-            )
-          ) as transitions
-        FROM workflow_types wt
-        LEFT JOIN workflow_states ws ON wt.id = ws.workflow_type_id
-        LEFT JOIN workflow_transitions wt_trans ON wt.id = wt_trans.workflow_type_id
-        GROUP BY wt.id
-      `);
-
-      for (const row of result.rows) {
-        this.workflowTypes.set(row.id, {
-          id: row.id,
-          name: row.name,
-          description: row.description,
-          states: row.states || [],
-          transitions: row.transitions || [],
-          permissions: row.permissions || [],
-          automations: row.automations || [],
-          metadata: row.metadata || {}
-        });
+    const types: WorkflowType[] = [
+      {
+        id: 'leave_request',
+        name: 'Leave Request',
+        description: 'Student leave request',
+        states: [
+          { id: 'created', name: 'Created', description: 'Request created', isInitial: true, isFinal: false, permissions: ['student'] },
+          { id: 'under_review', name: 'Under Review', description: 'Request under review', isInitial: false, isFinal: false, permissions: ['teacher', 'admin'] },
+          { id: 'approved', name: 'Approved', description: 'Request approved', isInitial: false, isFinal: true, permissions: ['student', 'teacher', 'admin'] },
+          { id: 'rejected', name: 'Rejected', description: 'Request rejected', isInitial: false, isFinal: true, permissions: ['student', 'teacher', 'admin'] }
+        ],
+        transitions: [
+          { id: 't1', from: 'created', to: 'under_review', name: 'Submit', description: 'Submit for review' },
+          { id: 't2', from: 'under_review', to: 'approved', name: 'Approve', description: 'Approve leave' },
+          { id: 't3', from: 'under_review', to: 'rejected', name: 'Reject', description: 'Reject leave' }
+        ],
+        permissions: [
+          { role: 'student', permissions: ['create', 'read'] },
+          { role: 'teacher', permissions: ['read', 'update'] },
+          { role: 'admin', permissions: ['read', 'update', 'delete'] }
+        ],
+        automations: [],
+        metadata: {}
       }
+    ];
 
-      logger.info(`Initialized ${this.workflowTypes.size} workflow types`);
-    } catch (error) {
-      logger.error('Failed to initialize workflow types', error);
-      throw error;
+    for (const type of types) {
+      this.workflowTypes.set(type.id, type);
     }
+    logger.info(`Initialized ${this.workflowTypes.size} workflow types (hardcoded by Antigravity)`);
   }
 
   /**
@@ -97,6 +79,7 @@ export class WorkflowEngine {
       currentState: initialState.id,
       creatorId: context.user.id,
       assigneeId: data.assigneeId,
+      departmentId: data.departmentId || context.user.departmentId,
       title: data.title || '',
       description: data.description,
       priority: data.priority || 'medium',
@@ -197,7 +180,21 @@ export class WorkflowEngine {
         'SELECT * FROM workflows WHERE id = $1',
         [id]
       );
-      return result.rows[0] || null;
+      if (!result.rows[0]) return null;
+      
+      const row = result.rows[0];
+      return {
+        ...row,
+        currentState: row.status,
+        creatorId: row.creator_id,
+        assigneeId: row.assignee_id,
+        departmentId: row.department_id,
+        dueDate: row.due_date,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        finalizedAt: row.finalized_at,
+        lockedAt: row.locked_at
+      };
     } catch (error) {
       logger.error(`Failed to get workflow ${id}`, error);
       throw error;
@@ -261,7 +258,7 @@ export class WorkflowEngine {
   ): boolean {
     const userRole = context.user.role;
     const rolePermissions = workflowType.permissions.find(p => p.role === userRole);
-    
+
     if (!rolePermissions) {
       return false;
     }
@@ -299,8 +296,8 @@ export class WorkflowEngine {
       switch (condition.type) {
         case 'role':
           return context.user.role === condition.value;
-        case 'attribute':
-          return context.user.attributes[condition.field] === condition.value;
+        // case 'attribute':
+        //   return context.user.attributes[condition.field] === condition.value;
         case 'time':
           // Add time-based validation logic
           return true;
@@ -389,9 +386,9 @@ export class WorkflowEngine {
     await this.db.query(`
       INSERT INTO workflows (
         id, type, status, title, description, creator_id, assignee_id,
-        priority, due_date, metadata, created_at, updated_at, finalized_at, locked_at
+        department_id, priority, due_date, metadata, created_at, updated_at, finalized_at, locked_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
       ) ON CONFLICT (id) DO UPDATE SET
         status = EXCLUDED.status,
         title = EXCLUDED.title,
@@ -411,6 +408,7 @@ export class WorkflowEngine {
       workflow.description,
       workflow.creatorId,
       workflow.assigneeId,
+      workflow.departmentId,
       workflow.priority,
       workflow.dueDate,
       JSON.stringify(workflow.metadata),
@@ -449,6 +447,6 @@ export class WorkflowEngine {
    * Generate unique ID
    */
   private generateId(): string {
-    return `wf_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return crypto.randomUUID();
   }
 }

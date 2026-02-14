@@ -18,10 +18,11 @@ export const createAuthRoutes = (authService: AuthService): Router => {
       // Validate request
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       const { email, password } = req.body;
@@ -47,11 +48,13 @@ export const createAuthRoutes = (authService: AuthService): Router => {
           }
         }
       });
+      return;
 
       logger.info(`User logged in: ${result.user.email}`);
     } catch (error) {
       logger.error('Login failed', error);
       next(error);
+      return;
     }
   });
 
@@ -65,15 +68,16 @@ export const createAuthRoutes = (authService: AuthService): Router => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       const { refreshToken } = req.body;
 
-      const tokens = await authService.refreshToken(refreshToken);
+      const tokens = await authService.refresh(refreshToken);
 
       res.json({
         success: true,
@@ -81,9 +85,11 @@ export const createAuthRoutes = (authService: AuthService): Router => {
           tokens
         }
       });
+      return;
     } catch (error) {
       logger.error('Token refresh failed', error);
       next(error);
+      return;
     }
   });
 
@@ -97,10 +103,11 @@ export const createAuthRoutes = (authService: AuthService): Router => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       const { refreshToken } = req.body;
@@ -114,9 +121,11 @@ export const createAuthRoutes = (authService: AuthService): Router => {
         success: true,
         message: 'Logged out successfully'
       });
+      return;
     } catch (error) {
       logger.error('Logout failed', error);
       next(error);
+      return;
     }
   });
 
@@ -134,13 +143,14 @@ export const createAuthRoutes = (authService: AuthService): Router => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
-      const { email, password, firstName, lastName, role, departmentId, attributes } = req.body;
+      const { email, password, firstName, lastName, role, departmentId } = req.body;
 
       const user = await authService.createUser({
         email,
@@ -148,8 +158,7 @@ export const createAuthRoutes = (authService: AuthService): Router => {
         firstName,
         lastName,
         role,
-        departmentId,
-        attributes
+        departmentId
       });
 
       res.status(201).json({
@@ -167,9 +176,11 @@ export const createAuthRoutes = (authService: AuthService): Router => {
       });
 
       logger.info(`User created: ${user.email}`);
+      return;
     } catch (error) {
       logger.error('User registration failed', error);
       next(error);
+      return;
     }
   });
 
@@ -184,16 +195,18 @@ export const createAuthRoutes = (authService: AuthService): Router => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: errors.array()
         });
+        return;
       }
 
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           error: 'Authentication required'
         });
+        return;
       }
 
       const { currentPassword, newPassword } = req.body;
@@ -206,9 +219,11 @@ export const createAuthRoutes = (authService: AuthService): Router => {
       });
 
       logger.info(`Password changed for user: ${req.user.id}`);
+      return;
     } catch (error) {
       logger.error('Password change failed', error);
       next(error);
+      return;
     }
   });
 
@@ -219,9 +234,10 @@ export const createAuthRoutes = (authService: AuthService): Router => {
   router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           error: 'Authentication required'
         });
+        return;
       }
 
       res.json({
@@ -231,14 +247,15 @@ export const createAuthRoutes = (authService: AuthService): Router => {
             id: req.user.id,
             email: req.user.email,
             role: req.user.role,
-            permissions: req.user.permissions,
-            attributes: req.user.attributes
+            permissions: req.user.permissions
           }
         }
       });
+      return;
     } catch (error) {
       logger.error('Get user profile failed', error);
       next(error);
+      return;
     }
   });
 

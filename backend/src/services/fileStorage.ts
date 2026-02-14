@@ -106,7 +106,7 @@ export class FileStorageService {
       // Here you would save to database
       // await this.saveFileToDatabase(fileUpload);
 
-      logger.info(`File uploaded: ${file.originalName} by ${uploadedBy}`);
+      logger.info(`File uploaded: ${file.originalname} by ${uploadedBy}`);
       return fileUpload;
     } catch (error) {
       logger.error('Failed to handle file upload', error);
@@ -121,19 +121,19 @@ export class FileStorageService {
     try {
       // Here you would retrieve from database
       // const fileRecord = await this.getFileFromDatabase(fileId);
-      
+
       // For now, let's assume we have the file path
       const filePath = path.join(this.uploadDir, fileId);
-      
+
       // Check if file exists
       await fs.access(filePath);
-      
+
       // Read file
       const fileBuffer = await fs.readFile(filePath);
-      
+
       // Determine MIME type (you'd get this from database)
       const mimeType = 'application/octet-stream'; // Default
-      
+
       return {
         file: fileBuffer,
         filename: fileId,
@@ -152,14 +152,14 @@ export class FileStorageService {
     try {
       // Here you would retrieve from database first
       // const fileRecord = await this.getFileFromDatabase(fileId);
-      
+
       // Delete from filesystem
       const filePath = path.join(this.uploadDir, fileId);
       await fs.unlink(filePath);
-      
+
       // Delete from database
       // await this.deleteFileFromDatabase(fileId);
-      
+
       logger.info(`File deleted: ${fileId}`);
     } catch (error) {
       logger.error('Failed to delete file', error);
@@ -175,11 +175,11 @@ export class FileStorageService {
       // Here you would retrieve from database
       // const fileRecord = await this.getFileFromDatabase(fileId);
       // return fileRecord;
-      
+
       // For now, return basic info
       const filePath = path.join(this.uploadDir, fileId);
       const stats = await fs.stat(filePath);
-      
+
       return {
         id: fileId,
         originalName: fileId,
@@ -271,7 +271,7 @@ export class FileStorageService {
     try {
       const files = await fs.readdir(this.uploadDir);
       let totalSize = 0;
-      
+
       for (const file of files) {
         const filePath = path.join(this.uploadDir, file);
         const stats = await fs.stat(filePath);
@@ -300,13 +300,13 @@ export class FileStorageService {
       const files = await fs.readdir(this.uploadDir);
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
-      
+
       let deletedCount = 0;
-      
+
       for (const file of files) {
         const filePath = path.join(this.uploadDir, file);
         const stats = await fs.stat(filePath);
-        
+
         if (stats.isFile() && stats.mtime < cutoffDate) {
           await fs.unlink(filePath);
           deletedCount++;

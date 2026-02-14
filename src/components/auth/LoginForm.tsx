@@ -43,17 +43,28 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
     setLoading(true)
     
     try {
-      const result = await apiClient.login({ email, password })
+      // Mock authentication for development
+      const mockUsers = [
+        { email: 'student@dwaop.com', password: 'student123', role: 'student' },
+        { email: 'teacher@dwaop.com', password: 'teacher123', role: 'teacher' },
+        { email: 'admin@dwaop.com', password: 'admin123', role: 'admin' }
+      ]
       
-      // Store user info in localStorage for compatibility
-      localStorage.setItem('userRole', result.user.role)
-      localStorage.setItem('userEmail', result.user.email)
+      const user = mockUsers.find(u => u.email === email && u.password === password)
       
-      // Redirect to dashboard
-      router.push(`/dashboard/${role}`)
+      if (user && user.role === role) {
+        // Store user info in localStorage
+        localStorage.setItem('userRole', role)
+        localStorage.setItem('userEmail', email)
+        localStorage.setItem('isLoggedIn', 'true')
+        
+        // Redirect to dashboard
+        router.push(`/dashboard/${role}`)
+      } else {
+        throw new Error('Invalid credentials or role mismatch')
+      }
     } catch (error) {
       console.error('Login failed:', error)
-      // Show error message (you could add a toast notification here)
       alert('Login failed. Please check your credentials and try again.')
     } finally {
       setLoading(false)

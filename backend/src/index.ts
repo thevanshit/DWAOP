@@ -27,8 +27,11 @@ class Application {
 
   constructor() {
     this.app = express();
+  }
+
+  public async initialize(): Promise<void> {
     this.initializeDatabase();
-    this.initializeServices();
+    await this.initializeServices();
     this.initializeMiddleware();
     this.initializeRoutes();
     this.initializeErrorHandling();
@@ -80,7 +83,7 @@ class Application {
     try {
       // Create HTTP server for Socket.IO
       this.server = require('http').createServer(this.app);
-      
+
       // Initialize notification service
       this.notificationService = new NotificationService(this.server);
       logger.info('WebSocket and notification service initialized');
@@ -141,7 +144,7 @@ class Application {
       try {
         const dbHealth = await this.database.healthCheck();
         const uptime = process.uptime();
-        
+
         res.status(200).json({
           status: 'healthy',
           uptime: uptime,
@@ -225,8 +228,8 @@ class Application {
       });
 
       // Don't expose error details in production
-      const message = config.nodeEnv === 'production' 
-        ? 'Internal server error' 
+      const message = config.nodeEnv === 'production'
+        ? 'Internal server error'
         : error.message;
 
       res.status(500).json({
@@ -241,6 +244,8 @@ class Application {
    */
   public async start(): Promise<void> {
     try {
+      await this.initialize();
+
       // Test database connection
       const dbConnected = await this.database.healthCheck();
       if (!dbConnected) {
@@ -266,8 +271,18 @@ class Application {
    */
   public async shutdown(): Promise<void> {
     logger.info('Shutting down application...');
-    
+
     try {
+      if (this.server) {
+        await new Promise<void>((resolve, reject) => {
+          this.server.close((err: any) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+        logger.info('Server closed');
+      }
+
       await this.database.close();
       logger.info('Database connection closed');
       process.exit(0);

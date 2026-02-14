@@ -11,7 +11,7 @@ declare global {
         email: string;
         role: string;
         permissions: string[];
-        attributes: Record<string, any>;
+        departmentId?: string;
       };
     }
   }
@@ -30,7 +30,7 @@ export class AuthMiddleware {
   public authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const authHeader = req.headers.authorization;
-      
+
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         res.status(401).json({ error: 'No token provided' });
         return;
@@ -40,14 +40,14 @@ export class AuthMiddleware {
 
       try {
         const payload = this.authService.verifyToken(token);
-        
+
         // Attach user to request
         req.user = {
           id: payload.userId,
           email: payload.email,
           role: payload.role,
           permissions: payload.permissions,
-          attributes: payload.attributes
+          departmentId: payload.departmentId
         };
 
         next();
@@ -117,19 +117,18 @@ export class AuthMiddleware {
   public optionalAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const authHeader = req.headers.authorization;
-      
+
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7);
-        
+
         try {
           const payload = this.authService.verifyToken(token);
-          
+
           req.user = {
             id: payload.userId,
             email: payload.email,
             role: payload.role,
-            permissions: payload.permissions,
-            attributes: payload.attributes
+            permissions: payload.permissions
           };
         } catch (tokenError) {
           // Token is invalid, but we don't fail the request

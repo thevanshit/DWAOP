@@ -22,7 +22,6 @@ export interface User {
   email: string;
   role: string;
   permissions: string[];
-  attributes: Record<string, any>;
 }
 
 export interface ResourceContext {
@@ -258,7 +257,7 @@ export class RBACService {
     try {
       // Get user permissions (with caching)
       const userPermissions = await this.getUserPermissions(userId);
-      
+
       // Check direct permission
       if (!userPermissions.has(permission)) {
         return false;
@@ -288,7 +287,7 @@ export class RBACService {
     try {
       // Get user from database
       const userResult = await this.db.query(
-        'SELECT role, attributes FROM users WHERE id = $1 AND is_active = true',
+        'SELECT role FROM users WHERE id = $1 AND is_active = true',
         [userId]
       );
 
@@ -328,7 +327,7 @@ export class RBACService {
     try {
       // Get user and role information
       const userResult = await this.db.query(
-        'SELECT role, attributes FROM users WHERE id = $1',
+        'SELECT role FROM users WHERE id = $1',
         [userId]
       );
 
@@ -391,8 +390,8 @@ export class RBACService {
     // Example: Check if user is the teacher for this attendance session
     if (conditions.assigned_subjects_only && resourceContext.id) {
       const result = await this.db.query(
-        `SELECT 1 FROM attendance_sessions 
-         WHERE id = $1 AND teacher_id = $2`,
+        `SELECT 1 FROM attendance_records 
+         WHERE id = $1 AND created_by = $2`,
         [resourceContext.id, userId]
       );
       return result.rows.length > 0;
@@ -412,7 +411,7 @@ export class RBACService {
     // Example: Check if user is the teacher for this assignment
     if (conditions.assigned_subjects_only && resourceContext.id) {
       const result = await this.db.query(
-        'SELECT 1 FROM assignments WHERE id = $1 AND teacher_id = $2',
+        'SELECT 1 FROM assignments WHERE id = $1 AND created_by = $2',
         [resourceContext.id, userId]
       );
       return result.rows.length > 0;

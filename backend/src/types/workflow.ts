@@ -65,6 +65,7 @@ export interface WorkflowInstance {
   currentState: string;
   creatorId: string;
   assigneeId?: string;
+  departmentId?: string;
   title: string;
   description?: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -94,7 +95,7 @@ export interface WorkflowContext {
     id: string;
     role: string;
     permissions: string[];
-    attributes: Record<string, any>;
+    departmentId?: string;
   };
   metadata: Record<string, any>;
 }

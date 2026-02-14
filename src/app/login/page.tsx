@@ -1,200 +1,489 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { GraduationCap, Users, Shield, ArrowRight, Sparkles } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { GraduationCap, ArrowRight, Shield, Mail, Lock, Eye, EyeOff, Layers, UserCheck, UserPlus, ShieldCheck, AlertCircle, CheckCircle, ArrowLeft, Loader2, User, FileText } from 'lucide-react'
 
-export default function LoginPage() {
+interface UserAccount {
+  email: string
+  password: string
+  role: 'student' | 'teacher' | 'admin'
+}
+
+const DEFAULT_ACCOUNTS: UserAccount[] = [
+  { email: 'student@gjust.edu.in', password: 'student123', role: 'student' },
+  { email: 'faculty@gjust.edu.in', password: 'faculty123', role: 'teacher' },
+  { email: 'admin@gjust.edu.in', password: 'admin123', role: 'admin' },
+]
+
+function getStoredUsers(): UserAccount[] {
+  if (typeof window === 'undefined') return []
+  const stored = localStorage.getItem('dwaop_users')
+  return stored ? JSON.parse(stored) : []
+}
+
+function validateCredentials(email: string, password: string): UserAccount | null {
+  const normalizedEmail = email.toLowerCase().trim()
+  const normalizedPassword = password.trim()
+  
+  const allUsers = [...DEFAULT_ACCOUNTS, ...getStoredUsers()]
+  
+  const user = allUsers.find(
+    u => u.email.toLowerCase() === normalizedEmail && u.password === normalizedPassword
+  )
+  
+  return user || null
+}
+
+function LoginForm() {
   const router = useRouter()
-  const [selectedRole, setSelectedRole] = useState<'student' | 'teacher' | 'admin' | null>(null)
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const mode = searchParams.get('mode') || 'signin'
+  
+  const [role, setRole] = useState<'student' | 'teacher' | 'admin'>('student')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [emailFocused, setEmailFocused] = useState(false)
+  const [passwordFocused, setPasswordFocused] = useState(false)
+  const [forgotPassword, setForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetSent, setResetSent] = useState(false)
+  const [cardVisible, setCardVisible] = useState(false)
+  const [isRegisterMode, setIsRegisterMode] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false)
+  const [name, setName] = useState('')
+  const [nameFocused, setNameFocused] = useState(false)
 
-  const handleRoleSelect = (role: 'student' | 'teacher' | 'admin') => {
-    setSelectedRole(role)
-    setTimeout(() => {
-      router.push(`/login/${role}`)
-    }, 300)
+  const isSignIn = mode === 'signin'
+  const isLoginFlow = isSignIn && !isRegisterMode
+
+  useEffect(() => {
+    setCardVisible(true)
+  }, [])
+
+  useEffect(() => {
+    if (email.endsWith('@gjust.edu.in')) {
+      const prefix = email.split('@')[0].toLowerCase()
+      if (prefix.includes('student')) setRole('student')
+      else if (prefix.includes('faculty') || prefix.includes('teacher')) setRole('teacher')
+      else if (prefix.includes('admin')) setRole('admin')
+    }
+  }, [email])
+
+  const validateEmail = (email: string) => {
+    const gjustRegex = /^[a-zA-Z0-9._%+-]+@gjust\.edu\.in$/
+    return gjustRegex.test(email)
   }
 
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-white">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.1),transparent_50%)]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(147,51,234,0.1),transparent_50%)]"></div>
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
 
-      {/* Header */}
-      <header className="relative z-10 pt-8 pb-4">
-        <div className="max-w-7xl mx-auto px-6">
-          <button
+    if (!email.trim()) {
+      setError('Please enter your email address')
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please use your institutional email (@gjust.edu.in)')
+      return
+    }
+
+    if (!password) {
+      setError('Please enter your password')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    await new Promise(resolve => setTimeout(resolve, 800))
+
+    const user = validateCredentials(email, password)
+
+    if (!user) {
+      setError('Invalid email or password')
+      setIsSubmitting(false)
+      return
+    }
+
+    localStorage.setItem('userRole', user.role)
+    localStorage.setItem('userEmail', email)
+    router.push(`/dashboard/${user.role}`)
+  }
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    if (!name.trim()) {
+      setError('Please enter your name')
+      return
+    }
+
+    if (!email.trim()) {
+      setError('Please enter your email address')
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please use your institutional email (@gjust.edu.in)')
+      return
+    }
+
+    if (!password) {
+      setError('Please enter a password')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    const existingUsers = getStoredUsers()
+    const emailExists = existingUsers.some(u => u.email.toLowerCase() === email.toLowerCase().trim())
+    
+    if (emailExists) {
+      setError('An account with this email already exists')
+      setIsSubmitting(false)
+      return
+    }
+
+    const newUser: UserAccount = {
+      email: email.toLowerCase().trim(),
+      password: password,
+      role: role
+    }
+
+    existingUsers.push(newUser)
+    localStorage.setItem('dwaop_users', JSON.stringify(existingUsers))
+
+    localStorage.setItem('userRole', role)
+    localStorage.setItem('userEmail', email)
+    router.push(`/dashboard/${role}`)
+  }
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validateEmail(resetEmail)) {
+      return
+    }
+    setIsSubmitting(true)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    setResetSent(true)
+    setIsSubmitting(false)
+  }
+
+  const roles = [
+    { id: 'student', label: 'Student', icon: <UserPlus className="w-4 h-4" /> },
+    { id: 'teacher', label: 'Faculty', icon: <UserCheck className="w-4 h-4" /> },
+    { id: 'admin', label: 'Admin', icon: <ShieldCheck className="w-4 h-4" /> },
+  ]
+
+  return (
+    <div className="min-h-screen bg-[var(--color-surface)] flex items-center justify-center p-4">
+      {/* Background */}
+      <div className="fixed inset-0 bg-dots opacity-20 pointer-events-none" />
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-blue-50/50 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-indigo-50/50 rounded-full blur-[120px] pointer-events-none" />
+      
+      {/* Main Card */}
+      <div className={`w-full max-w-md relative z-10 transition-all duration-500 ease-out ${cardVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        
+        {/* Logo & Back */}
+        <div className="mb-6">
+          <button 
             onClick={() => router.push('/')}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
           >
-            <ArrowRight className="w-4 h-4 rotate-180 mr-2" />
-            <span>Back to Home</span>
+            <ArrowLeft className="w-4 h-4" />
+            Back to home
           </button>
         </div>
-      </header>
 
-      <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-120px)] p-6">
-        <div className="max-w-6xl w-full">
-          {/* Header Section */}
-          <div className="text-center mb-16">
-            <div className="flex items-center justify-center mb-6">
-              <div className="relative">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                  <GraduationCap className="w-10 h-10 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
-                  <Sparkles className="w-3 h-3 text-yellow-800" />
-                </div>
-              </div>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="px-8 pt-8 pb-6 text-center border-b border-gray-50">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-xl mb-4 shadow-lg shadow-blue-500/20">
+              <Layers className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-              Welcome to <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">DWAOP</span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Choose your role to access your personalized dashboard
-            </p>
+            
+            {forgotPassword ? (
+              <>
+                <h1 className="text-xl font-semibold text-gray-900 mb-1">Reset Password</h1>
+                <p className="text-sm text-gray-500">Enter your email to receive reset instructions</p>
+              </>
+            ) : isLoginFlow ? (
+              <>
+                <h1 className="text-xl font-semibold text-gray-900 mb-1">Access workspace</h1>
+                <p className="text-sm text-gray-500">Sign in to continue to DWAOP</p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-xl font-semibold text-gray-900 mb-1">Create account</h1>
+                <p className="text-sm text-gray-500">Register to join DWAOP</p>
+              </>
+            )}
           </div>
 
-          {/* Role Selection Cards */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Student Login */}
-            <div
-              onClick={() => handleRoleSelect('student')}
-              onMouseEnter={() => setHoveredCard('student')}
-              onMouseLeave={() => setHoveredCard(null)}
-              className={`group relative bg-white rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                hoveredCard === 'student' 
-                  ? 'shadow-2xl scale-105 border-2 border-blue-500' 
-                  : 'shadow-lg hover:shadow-xl border-2 border-transparent'
-              }`}
-            >
-              {/* Gradient Background on Hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10`}></div>
-              
-              {/* Decorative Circle */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-200 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
-              
-              <div className="relative">
-                <div className={`w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 ${
-                  hoveredCard === 'student' ? 'scale-110 rotate-3' : ''
-                }`}>
-                  <Users className="w-10 h-10 text-white" />
+          {/* Form */}
+          <div className="p-8">
+            {forgotPassword ? (
+              <form onSubmit={handleResetPassword} className="space-y-5">
+                {!resetSent ? (
+                  <>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-2">Institutional Email</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="email"
+                          placeholder="you@gjust.edu.in"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                        />
+                      </div>
+                    </div>
+                    {error && (
+                      <div className="flex items-center gap-2 text-sm text-red-500">
+                        <AlertCircle className="w-4 h-4" />
+                        {error}
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || !resetEmail}
+                      className="w-full bg-[var(--color-primary)] text-white py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:bg-[var(--color-primary-dark)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                    >
+                      {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Reset Link'}
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-green-50 rounded-full mb-4">
+                      <CheckCircle className="w-8 h-8 text-green-500" />
+                    </div>
+                    <h3 className="font-medium text-gray-900 mb-2">Check your email</h3>
+                    <p className="text-sm text-gray-500 mb-6">We sent password reset instructions to {resetEmail}</p>
+                    <button type="button" onClick={() => { setForgotPassword(false); setResetSent(false); setResetEmail(''); setError(''); }} className="text-sm text-[var(--color-primary)] hover:underline">
+                      Back to sign in
+                    </button>
+                  </div>
+                )}
+              </form>
+            ) : isLoginFlow ? (
+              <form onSubmit={handleLogin} className="space-y-5">
+                {/* Role Tabs */}
+                <div className="flex bg-gray-100 p-1 rounded-xl">
+                  {roles.map((r) => (
+                    <button key={r.id} type="button" onClick={() => setRole(r.id as typeof role)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${role === r.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                      {r.icon}
+                      <span>{r.label}</span>
+                    </button>
+                  ))}
                 </div>
-                
-                <h3 className="text-2xl font-bold text-center mb-3 text-gray-900">Student</h3>
-                <p className="text-gray-600 text-center mb-6 leading-relaxed">
-                  Access your academic dashboard, track attendance, submit assignments, and view your progress in real-time.
-                </p>
-                
-                <div className={`flex items-center justify-center font-semibold transition-all duration-300 ${
-                  hoveredCard === 'student' 
-                    ? 'text-blue-600' 
-                    : 'text-gray-700 group-hover:text-blue-600'
-                }`}>
-                  <span>Login as Student</span>
-                  <ArrowRight className={`w-5 h-5 ml-2 transition-transform duration-300 ${
-                    hoveredCard === 'student' ? 'translate-x-2' : 'group-hover:translate-x-1'
-                  }`} />
-                </div>
-              </div>
-            </div>
 
-            {/* Teacher Login */}
-            <div
-              onClick={() => handleRoleSelect('teacher')}
-              onMouseEnter={() => setHoveredCard('teacher')}
-              onMouseLeave={() => setHoveredCard(null)}
-              className={`group relative bg-white rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                hoveredCard === 'teacher' 
-                  ? 'shadow-2xl scale-105 border-2 border-purple-500' 
-                  : 'shadow-lg hover:shadow-xl border-2 border-transparent'
-              }`}
-            >
-              {/* Gradient Background on Hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10`}></div>
-              
-              {/* Decorative Circle */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-200 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
-              
-              <div className="relative">
-                <div className={`w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 ${
-                  hoveredCard === 'teacher' ? 'scale-110 rotate-3' : ''
-                }`}>
-                  <GraduationCap className="w-10 h-10 text-white" />
+                {/* Email Field */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Institutional Email</label>
+                  <div className="relative">
+                    <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${emailFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
+                    <input
+                      type="email"
+                      placeholder="you@gjust.edu.in"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setEmailFocused(true)}
+                      onBlur={() => setEmailFocused(false)}
+                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                    />
+                  </div>
                 </div>
-                
-                <h3 className="text-2xl font-bold text-center mb-3 text-gray-900">Faculty & Teachers</h3>
-                <p className="text-gray-600 text-center mb-6 leading-relaxed">
-                  Manage lectures, assignments, evaluations, and departmental tasks with structured workflows and clear accountability.
-                </p>
-                
-                <div className={`flex items-center justify-center font-semibold transition-all duration-300 ${
-                  hoveredCard === 'teacher' 
-                    ? 'text-purple-600' 
-                    : 'text-gray-700 group-hover:text-purple-600'
-                }`}>
-                  <span>Login as Faculty</span>
-                  <ArrowRight className={`w-5 h-5 ml-2 transition-transform duration-300 ${
-                    hoveredCard === 'teacher' ? 'translate-x-2' : 'group-hover:translate-x-1'
-                  }`} />
-                </div>
-              </div>
-            </div>
 
-            {/* Admin Login */}
-            <div
-              onClick={() => handleRoleSelect('admin')}
-              onMouseEnter={() => setHoveredCard('admin')}
-              onMouseLeave={() => setHoveredCard(null)}
-              className={`group relative bg-white rounded-2xl p-8 cursor-pointer transition-all duration-300 ${
-                hoveredCard === 'admin' 
-                  ? 'shadow-2xl scale-105 border-2 border-pink-500' 
-                  : 'shadow-lg hover:shadow-xl border-2 border-transparent'
-              }`}
-            >
-              {/* Gradient Background on Hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10`}></div>
-              
-              {/* Decorative Circle */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-pink-200 rounded-full -mr-12 -mt-12 opacity-20 group-hover:opacity-30 transition-opacity"></div>
-              
-              <div className="relative">
-                <div className={`w-20 h-20 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg group-hover:shadow-xl transition-all duration-300 ${
-                  hoveredCard === 'admin' ? 'scale-110 rotate-3' : ''
-                }`}>
-                  <Shield className="w-10 h-10 text-white" />
+                {/* Password Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-medium text-gray-600">Password</label>
+                    <button type="button" onClick={() => setForgotPassword(true)} className="text-xs text-[var(--color-primary)] hover:underline">Forgot?</button>
+                  </div>
+                  <div className="relative">
+                    <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${passwordFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
+                      className="w-full pl-11 pr-11 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-                
-                <h3 className="text-2xl font-bold text-center mb-3 text-gray-900">Administration</h3>
-                <p className="text-gray-600 text-center mb-6 leading-relaxed">
-                  Department-wide oversight, analytics, risk monitoring, and policy configuration for data-driven governance.
-                </p>
-                
-                <div className={`flex items-center justify-center font-semibold transition-all duration-300 ${
-                  hoveredCard === 'admin' 
-                    ? 'text-pink-600' 
-                    : 'text-gray-700 group-hover:text-pink-600'
-                }`}>
-                  <span>Login as Admin</span>
-                  <ArrowRight className={`w-5 h-5 ml-2 transition-transform duration-300 ${
-                    hoveredCard === 'admin' ? 'translate-x-2' : 'group-hover:translate-x-1'
-                  }`} />
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Footer Note */}
-          <div className="text-center mt-12">
-            <p className="text-gray-500 text-sm">
-              Secure login • Role-based access • Protected by enterprise-grade security
-            </p>
+                {error && (
+                  <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50/50 px-3 py-2 rounded-lg">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                <button type="submit" disabled={isSubmitting} className="w-full bg-[var(--color-primary)] text-white py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:bg-[var(--color-primary-dark)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 shadow-lg shadow-blue-500/20">
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Signing in...</span></> : <><span>Sign in</span><ArrowRight className="w-4 h-4" /></>}
+                </button>
+
+                <p className="text-center text-sm text-gray-500">
+                  New to DWAOP?{' '}
+                  <button type="button" onClick={() => setIsRegisterMode(true)} className="text-[var(--color-primary)] hover:underline font-medium">
+                    Create account
+                  </button>
+                </p>
+              </form>
+            ) : (
+              /* Registration Mode */
+              <form onSubmit={handleRegister} className="space-y-4">
+                {/* Role Tabs */}
+                <div className="flex bg-gray-100 p-1 rounded-xl">
+                  {roles.map((r) => (
+                    <button key={r.id} type="button" onClick={() => setRole(r.id as typeof role)} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${role === r.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                      {r.icon}
+                      <span>{r.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Name Field */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Full Name</label>
+                  <div className="relative">
+                    <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${nameFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
+                    <input
+                      type="text"
+                      placeholder="Your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onFocus={() => setNameFocused(true)}
+                      onBlur={() => setNameFocused(false)}
+                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Email Field */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Institutional Email</label>
+                  <div className="relative">
+                    <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${emailFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
+                    <input
+                      type="email"
+                      placeholder="you@gjust.edu.in"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setEmailFocused(true)}
+                      onBlur={() => setEmailFocused(false)}
+                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Password</label>
+                  <div className="relative">
+                    <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${passwordFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Create a password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
+                      className="w-full pl-11 pr-11 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                    />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password Field */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-2">Confirm Password</label>
+                  <div className="relative">
+                    <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${confirmPasswordFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onFocus={() => setConfirmPasswordFocused(true)}
+                      onBlur={() => setConfirmPasswordFocused(false)}
+                      className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50/50 px-3 py-2 rounded-lg">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                <button type="submit" disabled={isSubmitting} className="w-full bg-[var(--color-primary)] text-white py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 hover:bg-[var(--color-primary-dark)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 shadow-lg shadow-blue-500/20">
+                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /><span>Creating account...</span></> : <><span>Create account</span><ArrowRight className="w-4 h-4" /></>}
+                </button>
+
+                <p className="text-center text-sm text-gray-500">
+                  Already have an account?{' '}
+                  <button type="button" onClick={() => setIsRegisterMode(false)} className="text-[var(--color-primary)] hover:underline font-medium">
+                    Sign in
+                  </button>
+                </p>
+              </form>
+            )}
           </div>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-2">
+          <Shield className="w-3 h-3" />
+          Secure institutional access • DWAOP v2.0.5
+        </p>
       </div>
     </div>
   )
 }
+
+function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <div className="animate-pulse flex items-center gap-2">
+          <div className="w-8 h-8 bg-gray-200 rounded-lg"></div>
+          <div className="h-4 w-20 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+export default LoginPage
