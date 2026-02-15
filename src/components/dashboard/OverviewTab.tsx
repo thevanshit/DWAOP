@@ -1,338 +1,99 @@
 'use client'
 
-import { useState } from 'react'
-import { Calendar, FileText, Award, CheckCircle, BookOpen, Bell, Clock, AlertCircle, Plus, Send, Target, GraduationCap, ChevronDown, ChevronUp, User, Megaphone } from 'lucide-react'
-import SectionHeader from '@/components/ui/SectionHeader'
-import AttendanceProgressBar from '@/components/ui/AttendanceProgressBar'
-import SubjectCard from '@/components/ui/SubjectCard'
-import StatusBadge from '@/components/ui/StatusBadge'
+import { Megaphone, Building2, GraduationCap, FileText, Download } from 'lucide-react'
+
+interface Announcement {
+    id: number
+    title: string
+    message: string
+    date: string
+    category?: string
+    priority?: string
+    author?: string
+    subject?: string
+}
 
 interface OverviewTabProps {
-    subjects: Array<{
-        id: number
-        name: string
-        code: string
-        attendance: number
-        totalClasses: number
-        presentClasses: number
-        assignmentCompletion: number
-        readinessScore: number
-        lastClass: string
-        nextClass: string
-    }>
-    announcements: Array<{
-        id: number
-        title: string
-        message: string
-        date: string
-        category: string
-        priority: string
-        author: string
-    }>
-    upcomingClasses: Array<{
-        date: string
-        day: string
-        classes: Array<{
-            time: string
-            subject: string
-            room: string
-            faculty: string
-        }>
-    }>
-    timetable: Array<{
-        day: string
-        slots: Array<{
-            time: string
-            subject: string
-            room: string
-        }>
-    }>
+    announcements?: Announcement[]
+    administrationAnnouncements?: Announcement[]
+    facultyAnnouncements?: Announcement[]
     isCR?: boolean
 }
 
-export default function OverviewTab({ subjects, announcements, upcomingClasses, timetable, isCR = false }: OverviewTabProps) {
-    const [expandedDays, setExpandedDays] = useState<string[]>(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
-    
-    const totalClasses = subjects.reduce((sum, s) => sum + s.totalClasses, 0)
-    const totalPresent = subjects.reduce((sum, s) => sum + s.presentClasses, 0)
-    const overallAttendance = Math.round((totalPresent / totalClasses) * 100)
+function AnnouncementCard({ title, message, date, subject, type }: { title: string, message: string, date: string, subject?: string, type: 'admin' | 'faculty' }) {
+    const isAdmin = type === 'admin'
+    return (
+        <div className={`p-4 rounded-xl border transition-all hover:shadow-md cursor-pointer ${isAdmin ? 'bg-blue-50/40 border-blue-100 hover:bg-blue-50/60' : 'bg-slate-50 border-slate-200 hover:bg-slate-100/60'}`}>
+            <div className="flex items-start justify-between gap-2 mb-2">
+                <p className="font-medium text-sm text-slate-800 line-clamp-2">{title}</p>
+                {isAdmin && <span className="w-2 h-2 bg-red-500 rounded-full shrink-0 mt-1" />}
+            </div>
+            <p className="text-xs text-slate-600 line-clamp-2">{message}</p>
+            <div className="flex items-center justify-between mt-3">
+                {subject && !isAdmin && (
+                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">{subject}</span>
+                )}
+                {isAdmin && (
+                    <span className="text-[10px] font-medium text-blue-700 bg-blue-100/60 px-2 py-0.5 rounded-full">ADMIN</span>
+                )}
+                <span className="text-[10px] text-slate-400">{date}</span>
+            </div>
+        </div>
+    )
+}
 
-    const riskSubjects = subjects.filter(s => s.attendance < 75)
-
-    const getClassesNeeded = (present: number, total: number) => {
-        const targetPercentage = 75
-        const needed = Math.ceil((targetPercentage * total - present * 100) / (100 - targetPercentage))
-        return Math.max(0, needed)
-    }
-
-    const getEligibilityStatus = () => {
-        if (overallAttendance >= 75) return { status: 'eligible', label: 'Eligible for Exams', color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' }
-        if (overallAttendance >= 65) return { status: 'at_risk', label: 'At Risk', color: 'text-yellow-600', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' }
-        return { status: 'not_eligible', label: 'Not Eligible', color: 'text-red-600', bgColor: 'bg-red-50', borderColor: 'border-red-200' }
-    }
-
-    const eligibility = getEligibilityStatus()
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' })
-
-    const getCategoryColor = (category: string) => {
-        const colors: Record<string, string> = {
-            exam: 'bg-red-100 text-red-700',
-            holiday: 'bg-green-100 text-green-700',
-            academic: 'bg-blue-100 text-blue-700',
-            general: 'bg-gray-100 text-gray-700'
+function SemesterResources() {
+    const resources = [
+        {
+            title: "4th Semester Syllabus",
+            description: "Detailed syllabus for Semester IV subjects",
+            file: "#"
+        },
+        {
+            title: "AIML Scheme (2nd Year)",
+            description: "Scheme structure for AIML specialization",
+            file: "#"
         }
-        return colors[category] || colors.general
-    }
-
-    const toggleDay = (day: string) => {
-        setExpandedDays(prev => 
-            prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-        )
-    }
+    ]
 
     return (
-        <div className="space-y-6">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <QuickStatCard
-                    label="Overall Attendance"
-                    value={`${overallAttendance}%`}
-                    icon={<Calendar className="w-5 h-5" />}
-                    color={overallAttendance >= 75 ? 'green' : overallAttendance >= 65 ? 'yellow' : 'red'}
-                />
-                <QuickStatCard
-                    label="Subjects at Risk"
-                    value={riskSubjects.length.toString()}
-                    icon={<AlertCircle className="w-5 h-5" />}
-                    color={riskSubjects.length === 0 ? 'green' : 'red'}
-                />
-                <QuickStatCard
-                    label="Avg Readiness"
-                    value={`${Math.round(subjects.reduce((sum, s) => sum + s.readinessScore, 0) / subjects.length)}%`}
-                    icon={<Target className="w-5 h-5" />}
-                    color="blue"
-                />
-                <QuickStatCard
-                    label="Eligibility"
-                    value={eligibility.label.split(' ')[0]}
-                    icon={<GraduationCap className="w-5 h-5" />}
-                    color={overallAttendance >= 75 ? 'green' : overallAttendance >= 65 ? 'yellow' : 'red'}
-                />
-            </div>
-
-            {/* Attendance Overview Card */}
-            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow">
-                <SectionHeader title="Attendance Overview" subtitle="Track your attendance and eligibility status" />
-
-                <div className="grid lg:grid-cols-3 gap-6 mt-4">
-                    <div className={`${eligibility.bgColor} rounded-xl p-5 border ${eligibility.borderColor}`}>
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-gray-600">Overall Attendance</span>
-                            <StatusBadge status={eligibility.status} />
-                        </div>
-                        <div className={`text-5xl font-bold ${eligibility.color} mb-2`}>{overallAttendance}%</div>
-                        <p className="text-sm text-gray-600">{totalPresent} out of {totalClasses} classes attended</p>
+        <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm">
+                        <FileText className="w-5 h-5" />
                     </div>
-
-                    <div className="lg:col-span-2">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Subjects Below 75%</h4>
-                        {riskSubjects.length === 0 ? (
-                            <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
-                                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
-                                    <CheckCircle className="w-5 h-5" />
-                                </div>
-                                <p className="text-sm text-green-700 font-medium">Great! All subjects have attendance above 75%</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {riskSubjects.map(subject => {
-                                    const needed = getClassesNeeded(subject.presentClasses, subject.totalClasses)
-                                    return (
-                                        <div key={subject.id} className="p-4 bg-red-50 rounded-xl border border-red-100">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gray-900">{subject.name}</p>
-                                                    <p className="text-xs text-gray-500">{subject.code}</p>
-                                                </div>
-                                                <span className="text-lg font-bold text-red-600">{subject.attendance}%</span>
-                                            </div>
-                                            <AttendanceProgressBar
-                                                percentage={subject.attendance}
-                                                total={subject.totalClasses}
-                                                present={subject.presentClasses}
-                                                size="sm"
-                                            />
-                                            <p className="text-xs text-red-700 mt-2 font-medium">
-                                                Attend <span className="font-bold">{needed} more consecutive classes</span> to reach 75%
-                                            </p>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Timetable Section - Full Week View */}
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                     <div>
-                        <h3 className="font-semibold text-gray-900">Weekly Timetable</h3>
-                        <p className="text-sm text-gray-500">Your complete class schedule</p>
+                        <h3 className="font-semibold text-slate-800 text-base">Semester Resources</h3>
+                        <p className="text-xs text-slate-500">Academic documents & syllabus</p>
                     </div>
-                </div>
-                <div className="divide-y divide-gray-100">
-                    {timetable.map((day) => (
-                        <div key={day.day}>
-                            <button 
-                                onClick={() => toggleDay(day.day)}
-                                className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${day.day === today ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
-                                        <Calendar className="w-5 h-5" />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className={`text-sm font-semibold ${day.day === today ? 'text-blue-600' : 'text-gray-900'}`}>
-                                            {day.day} {day.day === today && <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">Today</span>}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{day.slots.length} classes</p>
-                                    </div>
-                                </div>
-                                {expandedDays.includes(day.day) ? (
-                                    <ChevronUp className="w-5 h-5 text-gray-400" />
-                                ) : (
-                                    <ChevronDown className="w-5 h-5 text-gray-400" />
-                                )}
-                            </button>
-                            {expandedDays.includes(day.day) && (
-                                <div className="px-6 pb-4 bg-gray-50/50">
-                                    {day.slots.length > 0 ? (
-                                        <div className="grid gap-2">
-                                            {day.slots.map((slot, idx) => (
-                                                <div key={idx} className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
-                                                    <div className="w-20 shrink-0">
-                                                        <p className="text-sm font-semibold text-gray-900">{slot.time.split('-')[0]}</p>
-                                                        <p className="text-xs text-gray-500">{slot.time.split('-')[1]}</p>
-                                                    </div>
-                                                    <div className="flex-1 border-l border-gray-200 pl-4">
-                                                        <p className="text-sm font-medium text-gray-900">{slot.subject}</p>
-                                                        <p className="text-xs text-gray-500">Room: {slot.room}</p>
-                                                    </div>
-                                                    <Clock className="w-4 h-4 text-gray-400" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 text-center py-4">No classes scheduled</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    ))}
                 </div>
             </div>
 
-            {/* Announcements - Role Based */}
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600">
-                            <Megaphone className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-gray-900">
-                                {isCR ? 'Class Announcements' : 'Announcements'}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                                {isCR ? 'Create and forward announcements to your class' : 'Stay updated with latest notices'}
-                            </p>
-                        </div>
-                    </div>
-                    {isCR && (
-                        <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white text-sm font-medium rounded-xl hover:bg-[var(--color-primary-dark)] transition-colors">
-                            <Plus className="w-4 h-4" />
-                            Create
-                        </button>
-                    )}
-                </div>
-                <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-                    {announcements.slice(0, 5).map((ann) => (
-                        <div key={ann.id} className="p-5 hover:bg-gray-50 transition-colors cursor-pointer">
-                            <div className="flex items-start justify-between gap-4">
+            <div className="p-5">
+                <div className="grid md:grid-cols-2 gap-4">
+                    {resources.map((res, i) => (
+                        <a
+                            key={i}
+                            href={res.file}
+                            target="_blank"
+                            className="group p-4 rounded-xl border border-slate-200 hover:border-blue-300 transition-all hover:shadow-md bg-slate-50/50"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm border border-slate-100">
+                                    <FileText className="w-5 h-5" />
+                                </div>
                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-sm font-semibold text-gray-900">{ann.title}</p>
-                                        {ann.priority === 'high' && (
-                                            <span className="w-2 h-2 bg-red-500 rounded-full" />
-                                        )}
-                                    </div>
-                                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{ann.message}</p>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getCategoryColor(ann.category)}`}>
-                                            {ann.category}
-                                        </span>
-                                        <span className="text-xs text-gray-400">By {ann.author}</span>
-                                        <span className="text-xs text-gray-400">{ann.date}</span>
-                                    </div>
+                                    <p className="font-medium text-sm text-slate-800">
+                                        {res.title}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                        {res.description}
+                                    </p>
                                 </div>
+                                <Download className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
                             </div>
-                        </div>
-                    ))}
-                </div>
-                {isCR && (
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                        <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-colors">
-                            <Send className="w-4 h-4" />
-                            Forward to Students
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* Subject-wise Readiness */}
-            <div>
-                <SectionHeader
-                    title="Subject-wise Readiness"
-                    subtitle="Your performance across all subjects"
-                />
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
-                    {subjects.map(subject => (
-                        <SubjectCard key={subject.id} subject={subject} />
-                    ))}
-                </div>
-            </div>
-
-            {/* Upcoming Classes */}
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="px-6 py-4 border-b border-gray-100">
-                    <h3 className="font-semibold text-gray-900">Upcoming Classes</h3>
-                    <p className="text-sm text-gray-500">Next 3 days schedule</p>
-                </div>
-                <div className="divide-y divide-gray-100">
-                    {upcomingClasses.slice(0, 3).map((day, idx) => (
-                        <div key={idx} className="p-5">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className={`text-sm font-semibold ${day.day === 'Today' ? 'text-blue-600' : 'text-gray-900'}`}>
-                                    {day.day}
-                                </span>
-                                <span className="text-xs text-gray-400">{day.date}</span>
-                            </div>
-                            <div className="grid md:grid-cols-2 gap-2">
-                                {day.classes.map((cls, clsIdx) => (
-                                    <div key={clsIdx} className={`p-3 rounded-lg border ${day.day === 'Today' ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-100'}`}>
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">{cls.subject}</p>
-                                                <p className="text-xs text-gray-500 mt-0.5">{cls.faculty} • {cls.room}</p>
-                                            </div>
-                                            <span className="text-xs font-medium text-gray-600 bg-white px-2 py-1 rounded">{cls.time}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        </a>
                     ))}
                 </div>
             </div>
@@ -340,23 +101,221 @@ export default function OverviewTab({ subjects, announcements, upcomingClasses, 
     )
 }
 
-function QuickStatCard({ label, value, icon, color = 'blue' }: { label: string; value: string; icon: React.ReactNode; color?: 'blue' | 'green' | 'yellow' | 'red' }) {
-    const colorStyles = {
-        blue: 'bg-blue-50 text-blue-600',
-        green: 'bg-green-50 text-green-600',
-        yellow: 'bg-yellow-50 text-yellow-600',
-        red: 'bg-red-50 text-red-600'
+function Slot({ title, faculty, room, type = 'lecture', colSpan = 1 }: { title?: string, faculty?: string, room?: string, type?: 'lecture' | 'lab' | 'lunch' | 'free', colSpan?: number }) {
+    const styles = {
+        lecture: "bg-white border-blue-100 shadow-sm",
+        lab: "bg-slate-50 border-slate-200",
+        lunch: "bg-gray-100 border-gray-200 text-gray-500 flex items-center justify-center",
+        free: "bg-gray-50 border-gray-100 opacity-50"
     }
 
     return (
-        <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500 font-medium">{label}</span>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${colorStyles[color]}`}>
-                    {icon}
+        <div 
+            className={`h-full rounded-xl border p-3 text-xs flex flex-col justify-center transition-all hover:shadow-md ${styles[type]}`}
+            style={colSpan > 1 ? { gridColumn: `span ${colSpan} / span ${colSpan}` } : undefined}
+        >
+            {type === 'lunch' ? (
+                <span className="font-medium text-center">Lunch</span>
+            ) : type === 'free' ? (
+                <span className="text-center">—</span>
+            ) : (
+                <>
+                    <p className="font-semibold text-sm text-slate-800">{title}</p>
+                    <p className="text-slate-500 mt-0.5">{faculty}</p>
+                    <p className="text-slate-400">{room}</p>
+                </>
+            )}
+        </div>
+    )
+}
+
+const DayRow = ({ day, children }: { day: string, children: React.ReactNode }) => (
+    <div className="grid grid-cols-[60px_repeat(9,1fr)] gap-2 items-stretch">
+        <div className="flex items-center justify-center font-semibold text-slate-500 text-xs">{day}</div>
+        {children}
+    </div>
+)
+
+export default function OverviewTab({ announcements, administrationAnnouncements, facultyAnnouncements, isCR = false }: OverviewTabProps) {
+    const adminAnns = administrationAnnouncements || []
+    const facultyAnns = facultyAnnouncements || []
+    const legacyAnns = announcements || []
+
+    return (
+        <div className="space-y-6">
+            {/* Announcements - Two Column Layout */}
+            <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center text-amber-600 shadow-sm">
+                            <Megaphone className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-slate-800 text-base">Announcements</h3>
+                            <p className="text-xs text-slate-500">Stay updated with latest notices</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                    {/* Administration Section */}
+                    <div className="p-5 space-y-3">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Building2 className="w-4 h-4 text-blue-600" />
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Administration</p>
+                        </div>
+                        
+                        {adminAnns.length === 0 && facultyAnns.length === 0 && legacyAnns.length === 0 ? (
+                            <div className="py-8 text-center">
+                                <Megaphone className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                <p className="text-sm text-slate-500">No announcements</p>
+                            </div>
+                        ) : adminAnns.length > 0 ? (
+                            <div className="space-y-3">
+                                {adminAnns.map((ann) => (
+                                    <AnnouncementCard 
+                                        key={ann.id} 
+                                        title={ann.title} 
+                                        message={ann.message} 
+                                        date={ann.date}
+                                        type="admin"
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate-400 py-4">No administration announcements</p>
+                        )}
+                    </div>
+
+                    {/* Faculty Updates Section */}
+                    <div className="p-5 space-y-3">
+                        <div className="flex items-center gap-2 mb-1">
+                            <GraduationCap className="w-4 h-4 text-slate-600" />
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Faculty Updates</p>
+                        </div>
+                        
+                        {facultyAnns.length > 0 ? (
+                            <div className="space-y-3">
+                                {facultyAnns.map((ann) => (
+                                    <AnnouncementCard 
+                                        key={ann.id} 
+                                        title={ann.title} 
+                                        message={ann.message} 
+                                        date={ann.date}
+                                        subject={ann.subject}
+                                        type="faculty"
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate-400 py-4">No faculty announcements</p>
+                        )}
+                    </div>
                 </div>
             </div>
-            <span className="text-2xl font-bold text-gray-900">{value}</span>
+
+            {/* Timetable */}
+            <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04),0_4px_12px_rgba(0,0,0,0.02)]">
+                <div className="px-5 py-4 border-b border-slate-100">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="font-semibold text-slate-800 text-base">Weekly Timetable</h3>
+                            <p className="text-xs text-slate-500 mt-0.5">B.Tech AI&ML • Sem IV</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 bg-slate-300 rounded-sm"></div>
+                                <span className="text-[11px] text-slate-500 font-medium">Lab</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 bg-blue-300 rounded-sm"></div>
+                                <span className="text-[11px] text-slate-500 font-medium">Lecture</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 bg-gray-300 rounded-sm"></div>
+                                <span className="text-[11px] text-slate-500 font-medium">Lunch</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="p-4">
+                    {/* Time Header */}
+                    <div className="grid grid-cols-[60px_repeat(9,1fr)] gap-2 text-[9px] text-slate-400 mb-3">
+                        <div></div>
+                        <div className="text-center font-medium">8:30<br/>-<br/>9:30</div>
+                        <div className="text-center font-medium">9:30<br/>-<br/>10:30</div>
+                        <div className="text-center font-medium">10:30<br/>-<br/>11:30</div>
+                        <div className="text-center font-medium">11:30<br/>-<br/>12:30</div>
+                        <div className="text-center font-medium text-amber-600">12:30<br/>-<br/>1:30</div>
+                        <div className="text-center font-medium">1:30<br/>-<br/>2:30</div>
+                        <div className="text-center font-medium">2:30<br/>-<br/>3:30</div>
+                        <div className="text-center font-medium">3:30<br/>-<br/>4:30</div>
+                        <div className="text-center font-medium">4:30<br/>-<br/>5:30</div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        {/* MONDAY */}
+                        <DayRow day="MON">
+                            <Slot title="Python LAB G1 / DM LAB G2" faculty="Soni / Umesh" room="Lab115 / Lab317" type="lab" colSpan={2} />
+                            <Slot title="SE" faculty="Pooja" room="RN302" type="lecture" />
+                            <Slot title="AI" faculty="Rekha" room="RN302" type="lecture" />
+                            <Slot type="lunch" />
+                            <Slot title="Python LAB G3 / DM LAB G1" faculty="Soni / Umesh" room="Lab115 / Lab317" type="lab" colSpan={2} />
+                            <Slot title="DM" faculty="Bindu" room="RN302" type="lecture" />
+                            <Slot title="DBMS" faculty="Kavita" room="RN302" type="lecture" />
+                        </DayRow>
+
+                        {/* TUESDAY */}
+                        <DayRow day="TUE">
+                            <Slot title="Python LAB G2 / DM LAB G3" faculty="Deepak / Umesh" room="Lab115 / Lab317" type="lab" colSpan={2} />
+                            <Slot title="SE" faculty="Pooja" room="RN302" type="lecture" />
+                            <Slot title="DBMS" faculty="Kavita" room="RN302" type="lecture" />
+                            <Slot type="lunch" />
+                            <Slot title="DM" faculty="Bindu" room="RN302" type="lecture" />
+                            <Slot title="DLCD" faculty="—" room="RN209" type="lecture" />
+                            <Slot title="DBMS LAB G1" faculty="Mandeep" room="Lab115" type="lab" colSpan={2} />
+                        </DayRow>
+
+                        {/* WEDNESDAY */}
+                        <DayRow day="WED">
+                            <Slot title="Python LAB G3 / DM LAB G1" faculty="Soni / Umesh" room="Lab115 / Lab317" type="lab" colSpan={2} />
+                            <Slot title="OS" faculty="Dr. Anupma" room="RN105" type="lecture" />
+                            <Slot type="free" />
+                            <Slot type="lunch" />
+                            <Slot title="SE" faculty="Pooja" room="RN302" type="lecture" />
+                            <Slot title="DBMS" faculty="Kavita" room="RN302" type="lecture" />
+                            <Slot title="DBMS LAB G2" faculty="Mandeep" room="Lab115" type="lab" colSpan={2} />
+                        </DayRow>
+
+                        {/* THURSDAY */}
+                        <DayRow day="THU">
+                            <Slot title="Python LAB G1 / DM LAB G2" faculty="Jyoti / Umesh" room="Lab115 / Lab317" type="lab" colSpan={2} />
+                            <Slot title="OS" faculty="Dr. Anupma" room="RN105" type="lecture" />
+                            <Slot title="AI" faculty="Rekha" room="RN105" type="lecture" />
+                            <Slot type="lunch" />
+                            <Slot type="free" />
+                            <Slot title="DM" faculty="Bindu" room="RN302" type="lecture" />
+                            <Slot title="DLCD" faculty="—" room="RN302" type="lecture" />
+                            <Slot type="free" />
+                        </DayRow>
+
+                        {/* FRIDAY */}
+                        <DayRow day="FRI">
+                            <Slot title="Python LAB G2 / DM LAB G3" faculty="Suresh / Umesh" room="Lab115 / Lab317" type="lab" colSpan={2} />
+                            <Slot title="OS" faculty="Dr. Anupma" room="RN105" type="lecture" />
+                            <Slot title="AI" faculty="Rekha" room="RN105" type="lecture" />
+                            <Slot type="lunch" />
+                            <Slot title="DLCD" faculty="—" room="RN317" type="lecture" />
+                            <Slot type="free" />
+                            <Slot title="DBMS LAB G3" faculty="Mandeep" room="Lab115" type="lab" colSpan={2} />
+                        </DayRow>
+                    </div>
+                </div>
+            </div>
+
+            {/* Semester Resources */}
+            <SemesterResources />
         </div>
     )
 }

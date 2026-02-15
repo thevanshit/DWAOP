@@ -125,12 +125,14 @@ export default function DashboardLayout({ children, role, roleLabel, navItems, t
 
   return (
     <div className="min-h-screen bg-[var(--color-surface-subtle)]">
-      {/* Top Navigation - Fixed at top */}
+      {/* Top Navigation - Fixed at top with Apple-style blur effect */}
       <header className={`
-        fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-200
-        ${isScrolled ? 'bg-white/90 backdrop-blur-xl border-b border-gray-200 shadow-sm' : 'bg-white/80 backdrop-blur-md border-b border-gray-100'}
+        fixed top-0 left-0 right-0 z-50 h-14 transition-all duration-200
+        bg-white/80 backdrop-blur-md
+        border-b border-black/[0.03]
+        shadow-[0_1px_3px_rgba(0,0,0,0.02)]
       `}>
-        <div className="h-full max-w-[1600px] mx-auto px-3 md:px-5 flex items-center justify-between">
+        <div className="h-full w-full px-3 md:px-5 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -271,31 +273,32 @@ export default function DashboardLayout({ children, role, roleLabel, navItems, t
       </header>
 
       {/* Sidebar + Main Content Container */}
-      <div className="flex pt-16">
-        {/* Sidebar - Fixed on mobile, sticky on desktop */}
+      <div className="flex pt-14">
+        {/* Sidebar - Structural, not floating */}
         <aside
           className={`
-            fixed lg:sticky top-16 z-40
-            w-72 h-[calc(100vh-64px)] transition-transform duration-300 ease-in-out
+            hidden lg:flex flex-col
+            w-56 h-[calc(100vh-56px)] sticky top-14 z-40
+            bg-white border-r border-black/[0.06]
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
         >
-          <div className="h-full bg-white border-r border-[var(--color-border-light)] flex flex-col shadow-xl lg:shadow-none">
-            {/* User Profile Card */}
-            <div className="p-4 border-b border-[var(--color-border-light)] bg-gradient-to-br from-[var(--color-primary-faint)] via-white to-white">
-              <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm border border-[var(--color-border-light)]">
-                <div className="w-12 h-12 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
+          <div className="h-full flex flex-col">
+            {/* User Profile - compact but structured */}
+            <div className="px-3 py-2.5 border-b border-[var(--color-border-light)]">
+              <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--color-surface-subtle)] transition-colors cursor-pointer">
+                <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-md shadow-blue-500/20">
                   {getInitials(userName)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[var(--color-text-primary)] capitalize truncate">{userName}</p>
+                  <p className="text-sm font-medium text-[var(--color-text-primary)] capitalize truncate">{userName}</p>
                   <p className="text-xs text-[var(--color-text-muted)] capitalize">{role}</p>
                 </div>
               </div>
             </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 p-3 space-y-6 overflow-y-auto">
+            {/* Navigation - structured with visual hierarchy */}
+            <nav className="flex-1 px-2.5 py-2.5 overflow-y-auto">
               {(() => {
                 const sections: { [key: string]: typeof navItems } = {}
                 navItems.forEach(item => {
@@ -305,121 +308,147 @@ export default function DashboardLayout({ children, role, roleLabel, navItems, t
                 })
                 
                 return Object.entries(sections).map(([sectionName, items]) => (
-                  <div key={sectionName}>
-                    <div className="px-3 py-2">
-                      <span className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{sectionName}</span>
+                  <div key={sectionName} className="flex flex-col gap-1">
+                    {/* Section label - integrated styling */}
+                    <div className="px-2 py-1.5">
+                      <span className="text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider opacity-70">{sectionName}</span>
                     </div>
-                    <div className="space-y-1">
-                      {items.map((item) => {
-                        const isActive = currentHash === item.href || (item.href === '#overview' && (!currentHash || currentHash === ''))
+                    
+                    {/* Nav items - card-like structure */}
+                    {items.map((item) => {
+                      const isActive = currentHash === item.href || (item.href === '#overview' && (!currentHash || currentHash === ''))
 
-                        return (
-                          <button
-                            key={item.href}
-                            onClick={() => handleNavClick(item.href)}
-                            className={`
-                              group w-full text-left relative overflow-hidden
-                              transition-all duration-200
-                              ${isActive
-                                ? ''
-                                : ''
-                              }
-                            `}
-                          >
-                            {/* Card-like styling for nav item */}
-                            <div className={`
-                              flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all duration-200
-                              ${isActive
-                                ? 'bg-gradient-to-r from-[var(--color-primary)] to-blue-600 text-white shadow-lg shadow-blue-500/20 border-transparent'
-                                : 'bg-white border-[var(--color-border-light)] hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      return (
+                        <button
+                          key={item.href}
+                          onClick={() => handleNavClick(item.href)}
+                          className={`
+                            group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left
+                            transition-all duration-200
+                            ${isActive
+                              ? 'bg-gradient-to-r from-[var(--color-primary)] to-blue-600 text-white shadow-lg shadow-blue-500/20'
+                              : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text-primary)]'
+                            }
+                          `}
+                        >
+                          {/* Icon container - visual anchor */}
+                          <span className={`
+                            w-5 h-5 shrink-0 flex items-center justify-center
+                            ${isActive 
+                              ? 'text-white' 
+                              : 'text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]'
+                            }
+                          `}>
+                            {item.icon}
+                          </span>
+                          
+                          {/* Label */}
+                          <span className="flex-1 text-[13px] font-medium truncate">
+                            {item.label}
+                          </span>
+                          
+                          {/* Badge */}
+                          {item.badge !== undefined && item.badge > 0 && (
+                            <span className={`
+                              min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center
+                              ${isActive 
+                                ? 'bg-white/20 text-white' 
+                                : 'bg-red-500 text-white'
                               }
                             `}>
-                              {/* Active indicator */}
-                              {isActive && (
-                                <div className="absolute left-0 top-2 bottom-2 w-1 bg-white rounded-r-full" />
-                              )}
-                              
-                              {/* Icon container */}
-                              <div className={`
-                                w-10 h-10 rounded-lg flex items-center justify-center shrink-0
-                                ${isActive 
-                                  ? 'bg-white/20 text-white' 
-                                  : 'bg-[var(--color-surface-subtle)] text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] group-hover:bg-[var(--color-primary-faint)]'
-                                }
-                                transition-all duration-200
-                              `}>
-                                {item.icon}
-                              </div>
-                              
-                              {/* Label */}
-                              <span className="flex-1 text-sm font-medium">
-                                {item.label}
-                              </span>
-                              
-                              {/* Badge */}
-                              {item.badge !== undefined && item.badge > 0 && (
-                                <span className={`
-                                  px-2.5 py-1 rounded-full text-xs font-semibold
-                                  ${isActive 
-                                    ? 'bg-white/20 text-white' 
-                                    : 'bg-red-500 text-white'
-                                  }
-                                `}>
-                                  {item.badge}
-                                </span>
-                              )}
-                              
-                              {/* Chevron for inactive */}
-                              {!isActive && (
-                                <ChevronDown className="w-4 h-4 text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 -rotate-90 group-hover:rotate-0 transition-all duration-200" />
-                              )}
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 ))
               })()}
             </nav>
 
-            {/* Bottom Actions */}
-            <div className="p-3 border-t border-[var(--color-border-light)] space-y-2">
+            {/* Bottom Actions - structured */}
+            <div className="px-2.5 py-2 border-t border-[var(--color-border-light)]">
               <button
                 onClick={() => router.push('/settings')}
-                className="group w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[var(--color-border-light)] bg-white hover:border-[var(--color-primary)] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                className="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text-primary)] transition-colors"
               >
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--color-surface-subtle)] text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] group-hover:bg-[var(--color-primary-faint)] transition-all duration-200">
-                  <Settings className="w-5 h-5" />
-                </div>
-                <span className="flex-1 text-sm font-medium">Settings</span>
+                <Settings className="w-5 h-5 text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]" />
+                <span className="text-[13px] font-medium">Settings</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="group w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border border-red-100 bg-red-50 hover:bg-red-100 transition-all duration-200 text-red-600"
+                className="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-red-600 hover:bg-red-50 transition-colors"
               >
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-red-100 text-red-600 group-hover:bg-red-200 transition-all duration-200">
-                  <LogOut className="w-5 h-5" />
-                </div>
-                <span className="flex-1 text-sm font-medium">Sign out</span>
+                <LogOut className="w-5 h-5" />
+                <span className="text-[13px] font-medium">Sign out</span>
               </button>
             </div>
           </div>
         </aside>
 
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <div className="absolute inset-0 bg-black/30" />
+            <aside className="absolute left-0 top-0 w-64 h-full bg-white shadow-2xl">
+              <div className="h-full flex flex-col pt-14">
+                <div className="px-3 py-2.5 border-b border-[var(--color-border-light)]">
+                  <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[var(--color-surface-subtle)] transition-colors cursor-pointer">
+                    <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-md shadow-blue-500/20">
+                      {getInitials(userName)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--color-text-primary)] capitalize truncate">{userName}</p>
+                      <p className="text-xs text-[var(--color-text-muted)] capitalize">{role}</p>
+                    </div>
+                  </div>
+                </div>
+                <nav className="flex-1 px-2.5 py-2.5 overflow-y-auto">
+                  {navItems.map((item) => {
+                    const isActive = currentHash === item.href
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => handleNavClick(item.href)}
+                        className={`group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left mb-1 transition-all duration-200 ${isActive ? 'bg-gradient-to-r from-[var(--color-primary)] to-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-subtle)] hover:text-[var(--color-text-primary)]'}`}
+                      >
+                        <span className={`w-5 h-5 shrink-0 flex items-center justify-center ${isActive ? 'text-white' : 'text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)]'}`}>
+                          {item.icon}
+                        </span>
+                        <span className="flex-1 text-[13px] font-medium truncate">{item.label}</span>
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${isActive ? 'bg-white/20 text-white' : 'bg-red-500 text-white'}`}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </nav>
+                <div className="px-2.5 py-2 border-t border-[var(--color-border-light)]">
+                  <button onClick={() => router.push('/settings')} className="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-subtle)]">
+                    <Settings className="w-5 h-5" />
+                    <span className="text-[13px] font-medium">Settings</span>
+                  </button>
+                  <button onClick={handleLogout} className="group w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-red-600 hover:bg-red-50">
+                    <LogOut className="w-5 h-5" />
+                    <span className="text-[13px] font-medium">Sign out</span>
+                  </button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        )}
+
         {/* Main Content */}
-        <main className="flex-1 min-h-[calc(100vh-64px)] p-4 md:p-6 lg:p-8 w-full max-w-[1600px] lg:ml-72">
+        <main className="flex-1 min-h-[calc(100vh-56px)] p-4 md:p-5 lg:p-6 w-full">
           {children}
         </main>
       </div>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   )
 }

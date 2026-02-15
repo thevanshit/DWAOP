@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/common/DashboardLayout'
-import OverviewTab from '@/components/dashboard/AdvancedOverview'
+import OverviewTab from '@/components/dashboard/OverviewTab'
+import TimetableViewer from '@/components/dashboard/TimetableViewer'
 import AssignmentsTab from '@/components/dashboard/AssignmentsTab'
 import AttendanceTab from '@/components/dashboard/AttendanceTab'
 import MarksTab from '@/components/dashboard/MarksTab'
@@ -38,15 +39,21 @@ import {
   FileQuestion,
   AlertTriangle,
   Download,
-  Lock
+  Lock,
+  Sparkles,
+  Target,
+  Activity,
+  BookMarked
 } from 'lucide-react'
 import { UserRole } from '@/types'
 
 const SUBJECTS = [
   { id: 1, name: 'Data Structures', code: 'CS301', attendance: 88, totalClasses: 25, presentClasses: 22, assignmentCompletion: 85, readinessScore: 90, lastClass: 'Feb 10', nextClass: 'Feb 15' },
-  { id: 2, name: 'Database Systems', code: 'CS302', attendance: 72, totalClasses: 25, presentClasses: 18, assignmentCompletion: 60, readinessScore: 70, lastClass: 'Feb 12', nextClass: 'Feb 16' },
-  { id: 3, name: 'Operating Systems', code: 'CS303', attendance: 65, totalClasses: 25, presentClasses: 16, assignmentCompletion: 50, readinessScore: 62, lastClass: 'Feb 11', nextClass: 'Feb 14' },
+  { id: 2, name: 'Database Systems', code: 'CS302', attendance: 80, totalClasses: 25, presentClasses: 20, assignmentCompletion: 60, readinessScore: 70, lastClass: 'Feb 12', nextClass: 'Feb 16' },
+  { id: 3, name: 'Operating Systems', code: 'CS303', attendance: 84, totalClasses: 25, presentClasses: 21, assignmentCompletion: 50, readinessScore: 62, lastClass: 'Feb 11', nextClass: 'Feb 14' },
   { id: 4, name: 'Software Engineering', code: 'CS304', attendance: 92, totalClasses: 25, presentClasses: 23, assignmentCompletion: 95, readinessScore: 94, lastClass: 'Feb 13', nextClass: 'Feb 17' },
+  { id: 5, name: 'Computer Networks', code: 'CS305', attendance: 76, totalClasses: 25, presentClasses: 19, assignmentCompletion: 70, readinessScore: 75, lastClass: 'Feb 12', nextClass: 'Feb 16' },
+  { id: 6, name: 'Web Technologies', code: 'CS306', attendance: 84, totalClasses: 25, presentClasses: 21, assignmentCompletion: 80, readinessScore: 82, lastClass: 'Feb 14', nextClass: 'Feb 18' },
 ]
 
 const TIMETABLE = [
@@ -57,12 +64,39 @@ const TIMETABLE = [
   { day: 'Friday', slots: [{ time: '09:00-10:00', subject: 'Data Structures', room: 'A101' }, { time: '10:00-11:00', subject: 'Software Engineering', room: 'A104' }, { time: '11:00-12:00', subject: 'Database Systems', room: 'A102' }] },
 ]
 
-const ASSIGNMENTS: { id: number; subject: string; title: string; dueDate: string; status: 'pending' | 'submitted' | 'evaluated' | 'late'; maxMarks: number; submittedDate?: string; marks?: number }[] = [
-  { id: 1, subject: 'Data Structures', title: 'Binary Tree Implementation', dueDate: '2026-02-15', status: 'pending', maxMarks: 100 },
-  { id: 2, subject: 'Database Systems', title: 'SQL Queries Assignment', dueDate: '2026-02-18', status: 'submitted', maxMarks: 50, submittedDate: '2026-02-12' },
-  { id: 3, subject: 'Operating Systems', title: 'Process Scheduling Essay', dueDate: '2026-02-20', status: 'pending', maxMarks: 75 },
-  { id: 4, subject: 'Software Engineering', title: 'UML Diagram Design', dueDate: '2026-02-10', status: 'evaluated', maxMarks: 100, marks: 85 },
-  { id: 5, subject: 'Data Structures', title: 'Graph Algorithms Quiz', dueDate: '2026-02-08', status: 'late', maxMarks: 25 },
+const SUBJECTS_DATA = [
+  { code: 'DBMS', name: 'Database Management System', category: 'theory' },
+  { code: 'OS', name: 'Operating System', category: 'theory' },
+  { code: 'SE', name: 'Software Engineering', category: 'theory' },
+  { code: 'AI', name: 'Artificial Intelligence', category: 'theory' },
+  { code: 'DM', name: 'Data Mining', category: 'theory' },
+  { code: 'DLCD', name: 'Digital Logic & Computer Design', category: 'theory' },
+  { code: 'DBMS LAB', name: 'DBMS Lab', category: 'lab' },
+  { code: 'DM LAB', name: 'Data Mining Lab', category: 'lab' },
+  { code: 'PY LAB', name: 'Python Lab', category: 'lab' },
+]
+
+const ASSIGNMENTS: { id: number; subject: string; category: 'theory' | 'lab'; title: string; description: string; type: 'project' | 'coding' | 'documentation' | 'questions'; submissionType: 'github' | 'file' | 'text'; dueDate: string; status: 'pending' | 'submitted' | 'evaluated' | 'late'; maxMarks: number; submittedDate?: string; marks?: number; githubLink?: string }[] = [
+  { id: 1, subject: 'DBMS', category: 'theory', title: 'SQL Optimization Assignment', description: 'Optimize the given SQL queries for better performance', type: 'coding', submissionType: 'file', dueDate: '2026-02-20', status: 'pending', maxMarks: 50 },
+  { id: 2, subject: 'DBMS', category: 'theory', title: 'ER Diagram Design', description: 'Create ER diagram for online bookstore system', type: 'project', submissionType: 'file', dueDate: '2026-02-12', status: 'submitted', maxMarks: 75, submittedDate: '2026-02-10' },
+  { id: 3, subject: 'DBMS', category: 'theory', title: 'Normalization Quiz', description: 'Complete the normalization exercises', type: 'questions', submissionType: 'text', dueDate: '2026-02-08', status: 'evaluated', maxMarks: 25, marks: 22 },
+  { id: 4, subject: 'OS', category: 'theory', title: 'Process Scheduling Report', description: 'Write a detailed report on CPU scheduling algorithms', type: 'documentation', submissionType: 'text', dueDate: '2026-02-25', status: 'pending', maxMarks: 50 },
+  { id: 5, subject: 'OS', category: 'theory', title: 'Memory Management Essay', description: 'Explain paging and segmentation techniques', type: 'documentation', submissionType: 'text', dueDate: '2026-02-15', status: 'submitted', maxMarks: 30, submittedDate: '2026-02-14' },
+  { id: 6, subject: 'SE', category: 'theory', title: 'UML System Design', description: 'Create UML diagrams for library management system', type: 'project', submissionType: 'file', dueDate: '2026-03-01', status: 'pending', maxMarks: 100 },
+  { id: 7, subject: 'SE', category: 'theory', title: 'SDLC Documentation', description: 'Document all phases of SDLC for the given project', type: 'documentation', submissionType: 'file', dueDate: '2026-02-10', status: 'evaluated', maxMarks: 50, marks: 45 },
+  { id: 8, subject: 'AI', category: 'theory', title: 'Search Algorithms Project', description: 'Implement BFS and DFS for puzzle solving', type: 'project', submissionType: 'github', dueDate: '2026-02-28', status: 'pending', maxMarks: 75 },
+  { id: 9, subject: 'AI', category: 'theory', title: 'ML Basics Quiz', description: 'Complete the machine learning fundamentals quiz', type: 'questions', submissionType: 'text', dueDate: '2026-02-18', status: 'submitted', maxMarks: 25, submittedDate: '2026-02-17' },
+  { id: 10, subject: 'DM', category: 'theory', title: 'Clustering Analysis', description: 'Perform K-means clustering on given dataset', type: 'project', submissionType: 'file', dueDate: '2026-02-22', status: 'pending', maxMarks: 50 },
+  { id: 11, subject: 'DM', category: 'theory', title: 'Association Rules Report', description: 'Write report on market basket analysis', type: 'documentation', submissionType: 'text', dueDate: '2026-02-05', status: 'late', maxMarks: 30, submittedDate: '2026-02-07' },
+  { id: 12, subject: 'DLCD', category: 'theory', title: 'Boolean Algebra Worksheet', description: 'Solve boolean expression problems', type: 'questions', submissionType: 'text', dueDate: '2026-02-20', status: 'pending', maxMarks: 25 },
+  { id: 13, subject: 'DLCD', category: 'theory', title: 'Circuit Design Assignment', description: 'Design sequential circuit for given specifications', type: 'coding', submissionType: 'file', dueDate: '2026-02-12', status: 'evaluated', maxMarks: 50, marks: 42 },
+  { id: 14, subject: 'DBMS LAB', category: 'lab', title: 'SQL Queries Lab', description: 'Write complex SQL queries using joins and subqueries', type: 'coding', submissionType: 'file', dueDate: '2026-02-18', status: 'submitted', maxMarks: 30, submittedDate: '2026-02-16' },
+  { id: 15, subject: 'DBMS LAB', category: 'lab', title: 'Database Design Project', description: 'Design and implement a complete database system', type: 'project', submissionType: 'file', dueDate: '2026-03-05', status: 'pending', maxMarks: 75 },
+  { id: 16, subject: 'DM LAB', category: 'lab', title: 'Data Preprocessing Lab', description: 'Clean and preprocess the given dataset using Python', type: 'coding', submissionType: 'github', dueDate: '2026-02-25', status: 'pending', maxMarks: 50 },
+  { id: 17, subject: 'DM LAB', category: 'lab', title: 'Classification Model Lab', description: 'Build classification model using scikit-learn', type: 'project', submissionType: 'github', dueDate: '2026-02-10', status: 'evaluated', maxMarks: 50, marks: 48 },
+  { id: 18, subject: 'PY LAB', category: 'lab', title: 'Flask REST API', description: 'Create REST API using Flask framework', type: 'project', submissionType: 'github', dueDate: '2026-02-22', status: 'pending', maxMarks: 75 },
+  { id: 19, subject: 'PY LAB', category: 'lab', title: 'NumPy Exercises', description: 'Complete NumPy array manipulation exercises', type: 'coding', submissionType: 'file', dueDate: '2026-02-08', status: 'late', maxMarks: 25 },
+  { id: 20, subject: 'PY LAB', category: 'lab', title: 'Pandas Data Analysis', description: 'Analyze given dataset using Pandas', type: 'coding', submissionType: 'github', dueDate: '2026-02-15', status: 'submitted', maxMarks: 50, submittedDate: '2026-02-14' },
 ]
 
 const ATTENDANCE_DATA: { date: string; day: string; status: 'present' | 'absent'; time: string }[] = [
@@ -83,10 +117,23 @@ const ATTENDANCE_DATA: { date: string; day: string; status: 'present' | 'absent'
 ]
 
 const MARKS: { subject: string; subjectCode?: string; minor1: number | null; minor2: number | null; assignment: number | null; total: number | null; status: string }[] = [
-  { subject: 'Data Structures', subjectCode: 'CS301', minor1: 85, minor2: 78, assignment: 90, total: 253, status: 'finalized' },
-  { subject: 'Database Systems', subjectCode: 'CS302', minor1: 72, minor2: 80, assignment: 75, total: 227, status: 'under_review' },
-  { subject: 'Operating Systems', subjectCode: 'CS303', minor1: 68, minor2: null, assignment: null, total: 68, status: 'draft' },
-  { subject: 'Software Engineering', subjectCode: 'CS304', minor1: 88, minor2: 92, assignment: 85, total: 265, status: 'finalized' },
+  { subject: 'Data Structures', subjectCode: 'CS301', minor1: 18, minor2: 16, assignment: null, total: 34, status: 'finalized' },
+  { subject: 'Database Systems', subjectCode: 'CS302', minor1: 17, minor2: 15, assignment: null, total: 32, status: 'under_review' },
+  { subject: 'Operating Systems', subjectCode: 'CS303', minor1: 16, minor2: 14, assignment: null, total: 30, status: 'draft' },
+  { subject: 'Software Engineering', subjectCode: 'CS304', minor1: 17, minor2: 16, assignment: null, total: 33, status: 'finalized' },
+  { subject: 'Computer Networks', subjectCode: 'CS305', minor1: 16, minor2: 15, assignment: null, total: 31, status: 'draft' },
+  { subject: 'Web Technologies', subjectCode: 'CS306', minor1: 16, minor2: 14, assignment: null, total: 30, status: 'draft' },
+]
+
+const ADMIN_ANNOUNCEMENTS = [
+  { id: 1, title: 'Minor 2 Examination', message: 'Minor 2 exams will be held from March 1-5. Schedule will be uploaded soon.', date: '2026-02-12' },
+  { id: 2, title: 'Konark 2026 Holiday', message: 'Holiday on 16th February on the occasion of Konark 2026.', date: '2026-02-11' },
+]
+
+const FACULTY_ANNOUNCEMENTS = [
+  { id: 3, title: 'Operating Systems Class Cancelled', message: 'OS class on Tuesday (Feb 17) has been cancelled.', subject: 'Operating Systems', date: '2026-02-14' },
+  { id: 4, title: 'OS Assignment Deadline Extended', message: 'Assignment 2 deadline extended to 26th Feb.', subject: 'Operating Systems', date: '2026-02-13' },
+  { id: 5, title: 'DBMS Lab Cancelled', message: 'DBMS Lab on Wednesday (Feb 18) has been cancelled.', subject: 'Database Systems', date: '2026-02-12' },
 ]
 
 const ANNOUNCEMENTS = [
@@ -151,12 +198,18 @@ export default function StudentDashboard() {
 }
 
 function DashboardContent({ activeTab }: { activeTab: string }) {
+  const getEligibilityStatus = (attendance: number) => {
+    if (attendance >= 75) return { status: 'Eligible', color: 'green', icon: <CheckCircle className="w-4 h-4" /> }
+    if (attendance >= 65) return { status: 'At Risk', color: 'yellow', icon: <AlertCircle className="w-4 h-4" /> }
+    return { status: 'Not Eligible', color: 'red', icon: <XCircle className="w-4 h-4" /> }
+  }
+
   const studentInfo = {
     name: 'Vanshit Gaur',
-    rollNumber: '21SCSE1010XXX',
+    rollNumber: '240010150100',
     semester: 4,
-    section: 'A',
-    branch: 'Computer Science & Engineering'
+    branch: 'Computer Science & Engineering',
+    specialization: 'AI/ML'
   }
 
   const quickStats = [
@@ -174,71 +227,97 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
   }
 
   if (activeTab === 'overview') {
+    const getGreeting = () => {
+      const hour = new Date().getHours()
+      if (hour < 12) return 'Good Morning'
+      if (hour < 17) return 'Good Afternoon'
+      return 'Good Evening'
+    }
+
+    const pendingAssignmentsCount = ASSIGNMENTS.filter(a => a.status === 'pending').length
+    const aggregatedCGPA = 8.2
+
+    const totalClasses = SUBJECTS.reduce((sum, s) => sum + s.totalClasses, 0)
+    const totalPresent = SUBJECTS.reduce((sum, s) => sum + s.presentClasses, 0)
+    const overallAttendance = Math.round((totalPresent / totalClasses) * 100)
+    const eligibility = getEligibilityStatus(overallAttendance)
+
+    const subjectsCount = MARKS.length
+    const internalMarksPerSubject = 30
+    const totalPossibleInternal = subjectsCount * internalMarksPerSubject
+    const totalObtainedInternal = 100 // Hardcoded for demo - sum of minor1+minor2 per subject
+    const internalMarksPercentage = Math.round((totalObtainedInternal / totalPossibleInternal) * 100)
+
     return (
       <div className="space-y-6">
-        {/* Hero Header */}
-        <div className="bg-gradient-to-br from-white via-gray-50 to-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {/* Hero Header - Clean & Structural */}
+        <div className="
+          bg-gradient-to-br from-white via-[var(--color-primary-faint)]/30 to-white 
+          rounded-2xl border border-black/[0.04]
+          shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+          p-6 md:p-8
+          animate-in fade-in slide-in-from-bottom-4 duration-500
+        ">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-blue-500/20">
-                {studentInfo.name.split(' ').map(n => n[0]).join('')}
-              </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{getGreeting()}, {studentInfo.name.split(' ')[0]}!</h1>
-                <p className="text-gray-500 mt-1">Semester {studentInfo.semester} • Section {studentInfo.section} • {studentInfo.branch}</p>
-                <div className="flex items-center gap-3 mt-3">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Roll: {studentInfo.rollNumber}</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Active</span>
+                <h1 className="text-2xl md:text-3xl font-semibold text-[var(--color-text-primary)]">
+                  {getGreeting()}, <span className="text-[var(--color-primary)]">{studentInfo.name.split(' ')[0]}</span>!
+                </h1>
+                <div className="text-[var(--color-text-secondary)] mt-2 space-y-0.5">
+                  <p>Sem IV . BTech . {studentInfo.branch} ({studentInfo.specialization})</p>
+                </div>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="px-3 py-1 bg-[var(--color-primary-faint)] text-[var(--color-primary)] text-xs font-medium rounded-full">
+                    Roll No: {studentInfo.rollNumber}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-3">
-              <button className="p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                <Bell className="w-5 h-5 text-gray-600" />
-              </button>
-              <button className="px-4 py-2.5 bg-[var(--color-primary)] text-white text-sm font-medium rounded-xl hover:bg-[var(--color-primary-dark)] flex items-center gap-2 shadow-lg shadow-blue-500/20">
-                <FileText className="w-4 h-4" />
+              <button className="px-5 py-3 bg-[var(--color-primary)] text-white text-sm font-medium rounded-xl hover:bg-[var(--color-primary-dark)] flex items-center gap-2 shadow-lg shadow-[var(--color-primary)]/20 hover:shadow-[var(--color-primary)]/30 transition-all duration-200">
+                <BookMarked className="w-4 h-4" />
                 View Profile
               </button>
             </div>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickStats.map((stat, idx) => (
-            <div key={idx} className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-gray-500 font-medium">{stat.label}</span>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  stat.color === 'green' ? 'bg-green-50 text-green-600' :
-                  stat.color === 'blue' ? 'bg-blue-50 text-blue-600' :
-                  stat.color === 'amber' ? 'bg-amber-50 text-amber-600' :
-                  'bg-purple-50 text-purple-600'
-                }`}>
-                  {stat.icon}
-                </div>
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
-                {stat.trend && (
-                  <span className={`text-xs flex items-center mb-1 ${
-                    stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {stat.trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
-            </div>
-          ))}
+        {/* Quick Stats - 4 Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <QuickStatCard
+            label="Overall Attendance"
+            value={`${overallAttendance}%`}
+            sub="Semester attendance"
+            icon={<Calendar className="w-5 h-5" />}
+            color={overallAttendance >= 75 ? 'green' : overallAttendance >= 65 ? 'yellow' : 'red'}
+          />
+          <QuickStatCard
+            label="Internal Marks"
+            value={`${totalObtainedInternal} / ${totalPossibleInternal}`}
+            sub={`${internalMarksPercentage}% • ${subjectsCount} subjects`}
+            icon={<Award className="w-5 h-5" />}
+            color="purple"
+          />
+          <QuickStatCard
+            label="Pending Assignments"
+            value={pendingAssignmentsCount.toString()}
+            sub="Due this week"
+            icon={<FileText className="w-5 h-5" />}
+            color="amber"
+          />
+          <QuickStatCard
+            label="Exam Eligibility"
+            value={eligibility.status.split(' ')[0]}
+            sub={eligibility.status === 'Eligible' ? 'You are eligible' : 'Action required'}
+            icon={eligibility.status === 'Eligible' ? <CheckCircle className="w-5 h-5" /> : eligibility.status === 'At Risk' ? <AlertCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+            color={eligibility.status === 'Eligible' ? 'green' : eligibility.status === 'At Risk' ? 'yellow' : 'red'}
+          />
         </div>
 
         <OverviewTab
-          subjects={SUBJECTS}
-          announcements={ANNOUNCEMENTS}
-          upcomingClasses={UPCOMING_CLASSES}
-          timetable={TIMETABLE}
+          administrationAnnouncements={ADMIN_ANNOUNCEMENTS}
+          facultyAnnouncements={FACULTY_ANNOUNCEMENTS}
           isCR={false}
         />
       </div>
@@ -250,8 +329,8 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Assignments</h2>
-            <p className="text-gray-500 mt-1">Track and submit your assignments</p>
+            <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">Assignments</h2>
+            <p className="text-[var(--color-text-secondary)] mt-1">Track and submit your assignments</p>
           </div>
         </div>
         <AssignmentsTab assignments={ASSIGNMENTS} />
@@ -264,8 +343,8 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Attendance</h2>
-            <p className="text-gray-500 mt-1">Monitor your class attendance</p>
+            <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">Attendance Tracking</h2>
+            <p className="text-[var(--color-text-secondary)] mt-1">Monitor your class attendance and eligibility</p>
           </div>
         </div>
         <AttendanceTab subjects={SUBJECTS} attendanceData={ATTENDANCE_DATA} />
@@ -278,8 +357,8 @@ function DashboardContent({ activeTab }: { activeTab: string }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Marks & Grades</h2>
-            <p className="text-gray-500 mt-1">View your internal assessment marks</p>
+            <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">Marks & Grades</h2>
+            <p className="text-[var(--color-text-secondary)] mt-1">View your internal assessment marks</p>
           </div>
         </div>
         <MarksTab marks={MARKS} />
@@ -584,6 +663,30 @@ function TrackReportSection() {
           ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+function QuickStatCard({ label, value, sub, icon, color = 'blue' }: { label: string; value: string; sub: string; icon: React.ReactNode; color?: 'blue' | 'green' | 'yellow' | 'red' | 'amber' | 'purple' }) {
+  const colorStyles = {
+    blue: 'bg-blue-50 text-blue-600',
+    green: 'bg-green-50 text-green-600',
+    yellow: 'bg-yellow-50 text-yellow-600',
+    red: 'bg-red-50 text-red-600',
+    amber: 'bg-amber-50 text-amber-600',
+    purple: 'bg-purple-50 text-purple-600'
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-black/[0.04] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-lg hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-300">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-[var(--color-text-muted)]">{label}</span>
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${colorStyles[color]}`}>
+          {icon}
+        </div>
+      </div>
+      <span className="text-3xl font-bold text-[var(--color-text-primary)]">{value}</span>
+      <p className="text-xs text-[var(--color-text-muted)] mt-1">{sub}</p>
     </div>
   )
 }

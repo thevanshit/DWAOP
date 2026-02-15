@@ -17,7 +17,10 @@ import {
   Utensils,
   History,
   Home,
-  Phone
+  Phone,
+  Calendar,
+  MapPin,
+  Award
 } from 'lucide-react'
 
 const NOTIFICATIONS = [
@@ -83,9 +86,9 @@ export default function HostelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[var(--color-surface)]">
       {/* Top Navigation - Glassmorphism */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-100/50 py-2">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--color-border-light)] py-2">
         <div className="max-w-7xl mx-auto px-3 md:px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -144,7 +147,7 @@ export default function HostelPage() {
                     <p className="text-xs text-gray-500">{STUDENT_INFO.rollNumber}</p>
                   </div>
                   <div className="py-1">
-                    <button onClick={() => router.push('/student-report')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <button onClick={() => router.push('/profile')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                       <UserCircle className="w-4 h-4" /> My Profile
                     </button>
                     <button onClick={() => router.push('/fees')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
@@ -173,79 +176,83 @@ export default function HostelPage() {
       <main className="pt-14 pb-10 px-3 md:px-4 max-w-4xl mx-auto">
         <button 
           onClick={() => router.push('/dashboard/student')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-4"
+          className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </button>
 
         {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-xl font-semibold text-gray-900">Hostel Details</h1>
-          <p className="text-sm text-gray-500">Your current hostel information and history</p>
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Hostel Details</h1>
+          <p className="text-[var(--color-text-muted)] mt-1">Your current hostel information and history</p>
         </div>
 
-        {/* Current Hostel Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4">
+        {/* Current Hostel Card - Card Style */}
+        <div className="
+          bg-white rounded-2xl border border-black/[0.04]
+          shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+          overflow-hidden mb-6
+        ">
           <div className="h-20 bg-gradient-to-r from-blue-600 to-indigo-600"></div>
-          <div className="px-5 pb-5">
+          <div className="px-6 pb-6">
             <div className="flex items-center gap-4 -mt-10 mb-4">
               <div className="w-16 h-16 bg-white rounded-xl shadow-lg flex items-center justify-center">
                 <Building2 className="w-8 h-8 text-blue-600" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-gray-900">{CURRENT_HOSTEL.name}</h2>
-                <p className="text-sm text-gray-500">{CURRENT_HOSTEL.block}</p>
+                <h2 className="text-lg font-bold text-[var(--color-text-primary)]">{CURRENT_HOSTEL.name}</h2>
+                <p className="text-sm text-[var(--color-text-muted)]">{CURRENT_HOSTEL.block}</p>
               </div>
-              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Current</span>
+              <span className="px-3 py-1 bg-green-50 text-green-600 text-xs font-medium rounded-full">Current</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                  <Home className="w-4 h-4" />
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                  <Home className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500">Room Number</p>
-                  <p className="text-sm font-semibold text-gray-900">{CURRENT_HOSTEL.roomNumber}</p>
+                  <p className="text-[10px] text-[var(--color-text-muted)]">Room Number</p>
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">{CURRENT_HOSTEL.roomNumber}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div className="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
-                  <Bed className="w-4 h-4" />
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600">
+                  <Bed className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500">Bed Type</p>
-                  <p className="text-sm font-semibold text-gray-900">{CURRENT_HOSTEL.bedType}</p>
+                  <p className="text-[10px] text-[var(--color-text-muted)]">Bed Type</p>
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">{CURRENT_HOSTEL.bedType}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div className="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
-                  <Utensils className="w-4 h-4" />
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
+                  <Utensils className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500">Mess Type</p>
-                  <p className="text-sm font-semibold text-gray-900">{CURRENT_HOSTEL.messType}</p>
+                  <p className="text-[10px] text-[var(--color-text-muted)]">Mess Type</p>
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">{CURRENT_HOSTEL.messType}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                  <Users className="w-4 h-4" />
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center text-green-600">
+                  <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500">Floor</p>
-                  <p className="text-sm font-semibold text-gray-900">{CURRENT_HOSTEL.floor}</p>
+                  <p className="text-[10px] text-[var(--color-text-muted)]">Floor</p>
+                  <p className="text-sm font-semibold text-[var(--color-text-primary)]">{CURRENT_HOSTEL.floor}</p>
                 </div>
               </div>
             </div>
 
             {/* Wardens */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <h4 className="text-xs font-medium text-gray-500 mb-2">Warden Contact</h4>
-              <p className="text-sm font-medium text-gray-900">{CURRENT_HOSTEL.warden}</p>
+            <div className="mt-4 pt-4 border-t border-black/[0.04]">
+              <h4 className="text-xs font-medium text-[var(--color-text-muted)] mb-2">Warden Contact</h4>
+              <p className="text-sm font-medium text-[var(--color-text-primary)]">{CURRENT_HOSTEL.warden}</p>
               <div className="flex flex-wrap gap-2 mt-1">
                 {CURRENT_HOSTEL.wardens.map((w, i) => (
-                  <span key={i} className="text-xs text-gray-600">{w}</span>
+                  <span key={i} className="text-xs text-[var(--color-text-muted)]">{w}</span>
                 ))}
               </div>
               <a href={`tel:${CURRENT_HOSTEL.contact}`} className="inline-flex items-center gap-1 text-xs text-[var(--color-primary)] mt-1 hover:underline">
@@ -255,31 +262,35 @@ export default function HostelPage() {
           </div>
         </div>
 
-        {/* Hostel History */}
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
+        {/* Hostel History - Card Style */}
+        <div className="
+          bg-white rounded-2xl border border-black/[0.04]
+          shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+          overflow-hidden
+        ">
+          <div className="px-6 py-4 border-b border-black/[0.04]">
+            <h3 className="font-semibold text-[var(--color-text-primary)] text-sm flex items-center gap-2">
               <History className="w-4 h-4" />
               Hostel History
             </h3>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-black/[0.04]">
             {HOSTEL_HISTORY.map((history, idx) => (
-              <div key={idx} className="px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    history.status === 'current' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+              <div key={idx} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    history.status === 'current' ? 'bg-[var(--color-primary-faint)] text-[var(--color-primary)]' : 'bg-gray-100 text-gray-500'
                   }`}>
-                    <Building2 className="w-4 h-4" />
+                    <Building2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{history.hostel}</p>
-                    <p className="text-xs text-gray-500">Block {history.block} • Room {history.room}</p>
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{history.hostel}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Block {history.block} • Room {history.room}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    history.status === 'current' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                    history.status === 'current' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {history.semester}
                   </span>

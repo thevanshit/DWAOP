@@ -49,8 +49,9 @@ export function MetricCard({
   return (
     <div 
       className={`
-        relative overflow-hidden rounded-2xl border border-gray-200 transition-all duration-200 hover:shadow-xl
-        ${isHovered ? 'scale-105 shadow-2xl' : 'hover:shadow-xl'}
+        relative overflow-hidden rounded-2xl border border-black/[0.04] bg-white transition-all duration-200
+        shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-lg hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]
+        ${isHovered ? 'scale-[1.02]' : ''}
         ${className}
       `}
       onMouseEnter={() => setIsHovered(true)}

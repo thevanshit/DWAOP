@@ -17,7 +17,11 @@ import {
   Mail,
   Lock,
   Bell as BellIcon,
-  User
+  User,
+  Shield,
+  Moon,
+  Globe,
+  Smartphone
 } from 'lucide-react'
 
 const NOTIFICATIONS = [
@@ -81,12 +85,13 @@ export default function SettingsPage() {
     { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
     { id: 'notifications', label: 'Notifications', icon: <BellIcon className="w-4 h-4" /> },
     { id: 'security', label: 'Security', icon: <Lock className="w-4 h-4" /> },
+    { id: 'preferences', label: 'Preferences', icon: <SettingsIcon className="w-4 h-4" /> },
   ]
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[var(--color-surface)]">
       {/* Top Navigation - Glassmorphism */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-100/50 py-2">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--color-border-light)] py-2">
         <div className="max-w-7xl mx-auto px-3 md:px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -145,7 +150,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-gray-500">{STUDENT_INFO.rollNumber}</p>
                   </div>
                   <div className="py-1">
-                    <button onClick={() => router.push('/student-report')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <button onClick={() => router.push('/profile')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                       <UserCircle className="w-4 h-4" /> My Profile
                     </button>
                     <button onClick={() => router.push('/fees')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
@@ -174,27 +179,28 @@ export default function SettingsPage() {
       <main className="pt-14 pb-10 px-3 md:px-4 max-w-3xl mx-auto">
         <button 
           onClick={() => router.push('/dashboard/student')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-4"
+          className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </button>
 
         {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-500">Manage your account preferences</p>
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Settings</h1>
+          <p className="text-[var(--color-text-muted)] mt-1">Manage your account preferences</p>
         </div>
 
-        <div className="flex gap-3 mb-4 overflow-x-auto pb-2">
+        {/* Section Tabs */}
+        <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
           {sections.map((section) => (
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                 activeSection === section.id
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+                  ? 'bg-[var(--color-primary)] text-white shadow-md'
+                  : 'bg-white border border-black/[0.04] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:shadow-sm'
               }`}
             >
               {section.icon}
@@ -205,32 +211,44 @@ export default function SettingsPage() {
 
         {/* Profile Section */}
         {activeSection === 'profile' && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-6 space-y-6
+          ">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">
                 {getInitials(STUDENT_INFO.name)}
               </div>
               <div>
                 <button className="text-sm text-[var(--color-primary)] hover:underline">Change Photo</button>
-                <p className="text-xs text-gray-500">JPG, PNG. Max 2MB</p>
+                <p className="text-xs text-[var(--color-text-muted)]">JPG, PNG. Max 2MB</p>
               </div>
             </div>
             
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
+                <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-2">Full Name</label>
                 <input 
                   type="text" 
                   defaultValue={STUDENT_INFO.name}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-black/[0.04] rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+                <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-2">Phone</label>
                 <input 
                   type="tel" 
                   defaultValue={STUDENT_INFO.phone}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-black/[0.04] rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-2">Email</label>
+                <input 
+                  type="email" 
+                  defaultValue={STUDENT_INFO.email}
+                  className="w-full px-4 py-3 border border-black/[0.04] rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
             </div>
@@ -239,66 +257,147 @@ export default function SettingsPage() {
 
         {/* Notifications Section */}
         {activeSection === 'notifications' && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-            <h3 className="font-medium text-gray-900 text-sm mb-3">Notification Preferences</h3>
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-6 space-y-4
+          ">
+            <h3 className="font-medium text-[var(--color-text-primary)] text-sm mb-4 flex items-center gap-2">
+              <BellIcon className="w-4 h-4" />
+              Notification Preferences
+            </h3>
             {[
-              { key: 'email', label: 'Email Notifications', desc: 'Receive updates via email' },
-              { key: 'push', label: 'Push Notifications', desc: 'Receive browser notifications' },
-              { key: 'assignments', label: 'Assignment Alerts', desc: 'Due dates and submissions' },
-              { key: 'attendance', label: 'Attendance Warnings', desc: 'Low attendance notifications' },
-              { key: 'marks', label: 'Marks Updates', desc: 'When marks are released' },
-            ].map((item) => (
-              <div key={item.key} className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{item.label}</p>
-                  <p className="text-xs text-gray-500">{item.desc}</p>
+              { key: 'email', label: 'Email Notifications', desc: 'Receive updates via email', icon: Mail },
+              { key: 'push', label: 'Push Notifications', desc: 'Receive browser notifications', icon: Globe },
+              { key: 'assignments', label: 'Assignment Alerts', desc: 'Due dates and submissions', icon: Bell },
+              { key: 'attendance', label: 'Attendance Warnings', desc: 'Low attendance notifications', icon: Bell },
+              { key: 'marks', label: 'Marks Updates', desc: 'When marks are released', icon: Bell },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <div key={item.key} className="flex items-center justify-between py-3 border-b border-black/[0.04] last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-faint)] flex items-center justify-center text-[var(--color-primary)]">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[var(--color-text-primary)]">{item.label}</p>
+                      <p className="text-xs text-[var(--color-text-muted)]">{item.desc}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setNotifications({...notifications, [item.key]: !notifications[item.key as keyof typeof notifications]})}
+                    className={`w-12 h-7 rounded-full transition-colors ${notifications[item.key as keyof typeof notifications] ? 'bg-[var(--color-primary)]' : 'bg-gray-200'}`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${notifications[item.key as keyof typeof notifications] ? 'translate-x-5' : 'translate-x-1'}`} />
+                  </button>
                 </div>
-                <button 
-                  onClick={() => setNotifications({...notifications, [item.key]: !notifications[item.key as keyof typeof notifications]})}
-                  className={`w-10 h-6 rounded-full transition-colors ${notifications[item.key as keyof typeof notifications] ? 'bg-blue-600' : 'bg-gray-200'}`}
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${notifications[item.key as keyof typeof notifications] ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                </button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 
         {/* Security Section */}
         {activeSection === 'security' && (
-          <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-4">
-            <h3 className="font-medium text-gray-900 text-sm mb-3">Change Password</h3>
-            <div className="space-y-3">
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-6 space-y-4
+          ">
+            <h3 className="font-medium text-[var(--color-text-primary)] text-sm mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Change Password
+            </h3>
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Current Password</label>
+                <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-2">Current Password</label>
                 <input 
                   type="password" 
                   placeholder="Enter current password"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-black/[0.04] rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">New Password</label>
+                <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-2">New Password</label>
                 <input 
                   type="password" 
                   placeholder="Enter new password"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-black/[0.04] rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Confirm Password</label>
+                <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-2">Confirm Password</label>
                 <input 
                   type="password" 
                   placeholder="Confirm new password"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full px-4 py-3 border border-black/[0.04] rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
                 />
               </div>
             </div>
           </div>
         )}
 
+        {/* Preferences Section */}
+        {activeSection === 'preferences' && (
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-6 space-y-4
+          ">
+            <h3 className="font-medium text-[var(--color-text-primary)] text-sm mb-4 flex items-center gap-2">
+              <SettingsIcon className="w-4 h-4" />
+              App Preferences
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-3 border-b border-black/[0.04]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                    <Moon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">Dark Mode</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Switch between light and dark theme</p>
+                  </div>
+                </div>
+                <button className="w-12 h-7 rounded-full bg-gray-200 transition-colors">
+                  <div className="w-5 h-5 bg-white rounded-full shadow translate-x-1" />
+                </button>
+              </div>
+              <div className="flex items-center justify-between py-3 border-b border-black/[0.04]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">Language</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Select your preferred language</p>
+                  </div>
+                </div>
+                <select className="px-3 py-2 border border-black/[0.04] rounded-lg text-sm bg-gray-50 focus:outline-none">
+                  <option>English</option>
+                  <option>Hindi</option>
+                </select>
+              </div>
+              <div className="flex items-center justify-between py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                    <Smartphone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">Mobile Data</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Sync data only on WiFi</p>
+                  </div>
+                </div>
+                <button className="w-12 h-7 rounded-full bg-[var(--color-primary)] transition-colors">
+                  <div className="w-5 h-5 bg-white rounded-full shadow translate-x-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Save Button */}
-        <div className="flex items-center justify-end gap-3 mt-4">
+        <div className="flex items-center justify-end gap-3 mt-6">
           {saved && (
             <span className="text-sm text-green-600 flex items-center gap-1">
               <CheckCircle className="w-4 h-4" /> Saved
@@ -306,7 +405,7 @@ export default function SettingsPage() {
           )}
           <button 
             onClick={handleSave}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white text-sm font-medium rounded-lg hover:bg-[var(--color-primary-dark)] flex items-center gap-2"
+            className="px-6 py-3 bg-[var(--color-primary)] text-white text-sm font-medium rounded-xl hover:bg-[var(--color-primary-dark)] flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all hover:scale-105"
           >
             <Save className="w-4 h-4" /> Save Changes
           </button>

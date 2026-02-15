@@ -18,11 +18,11 @@ import {
   AlertCircle,
   Download,
   QrCode,
-  ExternalLink,
+  ChevronRight,
   Wallet,
   Landmark,
   Calendar,
-  ChevronRight
+  FileText
 } from 'lucide-react'
 
 const NOTIFICATIONS = [
@@ -89,9 +89,9 @@ export default function FeesPage() {
   const pendingFee = FEE_STRUCTURE.find(f => f.status === 'pending')
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface-subtle)]">
+    <div className="min-h-screen bg-[var(--color-surface)]">
       {/* Top Navigation - Glassmorphism */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100/50 py-2">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[var(--color-border-light)] py-2">
         <div className="max-w-7xl mx-auto px-3 md:px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -150,7 +150,7 @@ export default function FeesPage() {
                     <p className="text-xs text-gray-500">{STUDENT_INFO.rollNumber}</p>
                   </div>
                   <div className="py-1">
-                    <button onClick={() => router.push('/student-report')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <button onClick={() => router.push('/profile')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                       <UserCircle className="w-4 h-4" /> My Profile
                     </button>
                     <button onClick={() => router.push('/fees')} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
@@ -179,7 +179,7 @@ export default function FeesPage() {
       <main className="pt-14 pb-10 px-3 md:px-4 max-w-5xl mx-auto">
         <button 
           onClick={() => router.push('/dashboard/student')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-4"
+          className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Dashboard
@@ -187,53 +187,73 @@ export default function FeesPage() {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Fee Submission</h1>
-          <p className="text-gray-600 mt-1">Manage your tuition and hostel fees</p>
+          <h1 className="text-2xl font-semibold text-[var(--color-text-primary)]">Fee Submission</h1>
+          <p className="text-[var(--color-text-muted)] mt-1">Manage your tuition and hostel fees</p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
+        {/* Quick Stats - Card Style */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
+          ">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500 font-medium">Total Paid</span>
+              <span className="text-sm font-medium text-[var(--color-text-muted)]">Total Paid</span>
               <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
                 <CheckCircle className="w-5 h-5" />
               </div>
             </div>
             <p className="text-2xl font-bold text-green-600">₹{totalPaid.toLocaleString()}</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
+          ">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500 font-medium">Pending</span>
+              <span className="text-sm font-medium text-[var(--color-text-muted)]">Pending</span>
               <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
                 <Clock className="w-5 h-5" />
               </div>
             </div>
             <p className="text-2xl font-bold text-amber-600">₹{totalPending.toLocaleString()}</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
+          ">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500 font-medium">Per Semester</span>
+              <span className="text-sm font-medium text-[var(--color-text-muted)]">Per Semester</span>
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
                 <Wallet className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">₹59,050</p>
+            <p className="text-2xl font-bold text-[var(--color-text-primary)]">₹59,050</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="
+            bg-white rounded-2xl border border-black/[0.04]
+            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+            p-5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
+          ">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-500 font-medium">Next Due</span>
+              <span className="text-sm font-medium text-[var(--color-text-muted)]">Next Due</span>
               <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
                 <Calendar className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">Feb 28</p>
+            <p className="text-2xl font-bold text-[var(--color-text-primary)]">Feb 28</p>
           </div>
         </div>
 
         {/* Pending Fee Alert */}
         {pendingFee && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 mb-6 shadow-sm">
+          <div className="
+            bg-gradient-to-r from-amber-50 to-orange-50 
+            border border-amber-200/50 rounded-2xl p-6 mb-6 
+            shadow-[0_1px_3px_rgba(0,0,0,0.02)]
+          ">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="flex items-start gap-4 flex-1">
                 <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 shrink-0">
@@ -260,43 +280,47 @@ export default function FeesPage() {
           </div>
         )}
 
-        {/* Fee Structure */}
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden mb-6 shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Fee Structure</h3>
-            <span className="text-sm text-gray-500">All amounts in INR (₹)</span>
+        {/* Fee Structure - Card Style */}
+        <div className="
+          bg-white rounded-2xl border border-black/[0.04]
+          shadow-[0_1px_3px_rgba(0,0,0.0.02),0_4px_12px_rgba(0,0,0,0.02)]
+          overflow-hidden mb-6
+        ">
+          <div className="px-6 py-4 border-b border-black/[0.04] flex items-center justify-between">
+            <h3 className="font-semibold text-[var(--color-text-primary)]">Fee Structure</h3>
+            <span className="text-sm text-[var(--color-text-muted)]">All amounts in INR (₹)</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Semester</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Tuition</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Hostel</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Library</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Exam</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Total</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Action</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">Semester</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase">Tuition</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase">Hostel</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase">Library</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase">Exam</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[var(--color-text-muted)] uppercase">Total</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text-muted)] uppercase">Status</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text-muted)] uppercase">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-black/[0.04]">
                 {FEE_STRUCTURE.map((fee) => (
                   <tr key={fee.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{fee.semester}</p>
-                        <p className="text-xs text-gray-500">{fee.year}</p>
+                        <p className="text-sm font-semibold text-[var(--color-text-primary)]">{fee.semester}</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">{fee.year}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-right text-gray-600">₹{fee.tuition.toLocaleString()}</td>
-                    <td className="px-4 py-4 text-sm text-right text-gray-600">₹{fee.hostel.toLocaleString()}</td>
-                    <td className="px-4 py-4 text-sm text-right text-gray-600">₹{fee.library.toLocaleString()}</td>
-                    <td className="px-4 py-4 text-sm text-right text-gray-600">₹{fee.exam.toLocaleString()}</td>
-                    <td className="px-4 py-4 text-sm font-bold text-gray-900 text-right">₹{fee.total.toLocaleString()}</td>
+                    <td className="px-4 py-4 text-sm text-right text-[var(--color-text-muted)]">₹{fee.tuition.toLocaleString()}</td>
+                    <td className="px-4 py-4 text-sm text-right text-[var(--color-text-muted)]">₹{fee.hostel.toLocaleString()}</td>
+                    <td className="px-4 py-4 text-sm text-right text-[var(--color-text-muted)]">₹{fee.library.toLocaleString()}</td>
+                    <td className="px-4 py-4 text-sm text-right text-[var(--color-text-muted)]">₹{fee.exam.toLocaleString()}</td>
+                    <td className="px-4 py-4 text-sm font-bold text-[var(--color-text-primary)] text-right">₹{fee.total.toLocaleString()}</td>
                     <td className="px-4 py-4 text-center">
                       <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                        fee.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                        fee.status === 'paid' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
                       }`}>
                         {fee.status === 'paid' ? 'Paid' : 'Pending'}
                       </span>
@@ -322,15 +346,19 @@ export default function FeesPage() {
           </div>
         </div>
 
-        {/* Transaction History */}
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-900">Transaction History</h3>
+        {/* Transaction History - Card Style */}
+        <div className="
+          bg-white rounded-2xl border border-black/[0.04]
+          shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
+          overflow-hidden
+        ">
+          <div className="px-6 py-4 border-b border-black/[0.04] flex items-center justify-between">
+            <h3 className="font-semibold text-[var(--color-text-primary)]">Transaction History</h3>
             <button className="text-sm text-[var(--color-primary)] hover:underline flex items-center gap-1 font-medium">
               <Download className="w-4 h-4" /> Download All
             </button>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-black/[0.04]">
             {TRANSACTIONS.map((txn) => (
               <div key={txn.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
@@ -338,17 +366,17 @@ export default function FeesPage() {
                     <CheckCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">₹{txn.amount.toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)]">₹{txn.amount.toLocaleString()}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500">{txn.method}</span>
+                      <span className="text-xs text-[var(--color-text-muted)]">{txn.method}</span>
                       <span className="text-gray-300">•</span>
-                      <span className="text-xs text-gray-500">{txn.reference}</span>
+                      <span className="text-xs text-[var(--color-text-muted)]">{txn.reference}</span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{txn.semester}</p>
-                  <p className="text-xs text-gray-500">{txn.date}</p>
+                  <p className="text-sm font-medium text-[var(--color-text-primary)]">{txn.semester}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{txn.date}</p>
                 </div>
               </div>
             ))}
@@ -426,7 +454,7 @@ export default function FeesPage() {
                     <CreditCard className="w-6 h-6" />
                   </div>
                   <div className="text-left flex-1">
-                    <p className="font-semibold text-gray-900">Debit / Credit Card</p>
+                    <p className="font-semibold text-gray-900">Debit / credit Card</p>
                     <p className="text-xs text-gray-500">Visa, Mastercard, RuPay</p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400" />

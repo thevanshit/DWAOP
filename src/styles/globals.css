@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+.lab {
+  background: #eef4ff;
+}
+
+.timetable td.lab {
+  background: #eef4ff;
+}
+
+.lunch {
+  background: #fff3cd;
+  text-align: center;
+  font-weight: bold;
+}
+
 :root {
   /* Minimal White-Blue-Grey Theme */
   --color-primary: #2563EB;

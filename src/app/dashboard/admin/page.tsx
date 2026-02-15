@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   FileCheck,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Calendar
 } from 'lucide-react'
 import { Task, UserRole } from '@/types'
 
@@ -177,6 +178,16 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'timetable' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+              <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm text-gray-500">Timetable is now managed as a static component</p>
+              <p className="text-xs text-gray-400 mt-1">Contact developer to update the timetable</p>
             </div>
           </div>
         )}
