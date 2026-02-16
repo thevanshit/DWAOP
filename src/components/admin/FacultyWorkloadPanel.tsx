@@ -261,14 +261,14 @@ function FacultyRow({ member, isSelected, onClick }: {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-10 h-10 rounded-full bg-blue-50 border border-slate-200 flex items-center justify-center text-blue-600 font-bold text-sm">
             {member.avatar}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold text-slate-900">{member.name}</p>
               {member.delayedTasks > 0 && (
-                <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                <AlertTriangle className="w-3.5 h-3.5 text-blue-500" />
               )}
             </div>
             <p className="text-xs text-slate-500">{member.role} • {member.specialization}</p>

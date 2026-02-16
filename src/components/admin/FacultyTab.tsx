@@ -80,7 +80,7 @@ export default function FacultyTab() {
           <h2 className="text-xl font-bold text-slate-900">Faculty Directory</h2>
           <p className="text-sm text-slate-500 mt-1">Manage department faculty and their responsibilities</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 shadow-sm">
           <Plus className="w-4 h-4" />
           Add Faculty
         </button>
@@ -90,7 +90,7 @@ export default function FacultyTab() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
               <Users className="w-5 h-5 text-blue-600" />
             </div>
             <div>
@@ -101,19 +101,19 @@ export default function FacultyTab() {
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.active}</p>
               <p className="text-xs text-slate-500">Active</p>
             </div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Layers className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Layers className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.avgWorkload}%</p>
@@ -123,11 +123,11 @@ export default function FacultyTab() {
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-amber-600">{stats.totalPendingTasks}</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.totalPendingTasks}</p>
               <p className="text-xs text-slate-500">Pending Tasks</p>
             </div>
           </div>
@@ -170,11 +170,11 @@ function FacultyCard({ faculty }: { faculty: FacultyMember }) {
                        faculty.workload >= 60 ? 'text-amber-600' : 'text-green-600'
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold">
+          <div className="w-12 h-12 rounded-full bg-blue-50 border border-slate-200 flex items-center justify-center text-blue-600 font-bold">
             {faculty.avatar}
           </div>
           <div>

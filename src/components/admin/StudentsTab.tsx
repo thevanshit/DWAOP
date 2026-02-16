@@ -87,7 +87,7 @@ export default function StudentsTab({}: StudentsTabProps) {
           <h2 className="text-xl font-bold text-slate-900">Student Management</h2>
           <p className="text-sm text-slate-500 mt-1">View and manage all students in the department</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 shadow-sm">
           <Download className="w-4 h-4" />
           Export Data
         </button>
@@ -97,7 +97,7 @@ export default function StudentsTab({}: StudentsTabProps) {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
               <Users className="w-5 h-5 text-blue-600" />
             </div>
             <div>
@@ -108,30 +108,30 @@ export default function StudentsTab({}: StudentsTabProps) {
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-600">{stats.atRisk}</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.atRisk}</p>
               <p className="text-xs text-slate-500">At Risk</p>
             </div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.active}</p>
               <p className="text-xs text-slate-500">Active</p>
             </div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900">{stats.avgAttendance}%</p>
@@ -141,7 +141,7 @@ export default function StudentsTab({}: StudentsTabProps) {
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
               <Award className="w-5 h-5 text-amber-600" />
             </div>
             <div>
@@ -199,7 +199,7 @@ export default function StudentsTab({}: StudentsTabProps) {
               <tr key={student.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-9 h-9 rounded-full bg-blue-50 border border-slate-200 flex items-center justify-center text-blue-600 font-bold text-sm">
                       {student.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
@@ -235,7 +235,7 @@ export default function StudentsTab({}: StudentsTabProps) {
                 </td>
                 <td className="px-6 py-4">
                   {student.pendingAssignments > 0 ? (
-                    <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
+                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium">
                       {student.pendingAssignments} pending
                     </span>
                   ) : (

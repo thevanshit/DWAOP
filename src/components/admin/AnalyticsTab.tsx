@@ -281,7 +281,7 @@ export default function AnalyticsTab() {
           <div className="space-y-3">
             {FACULTY_LOAD.map((faculty, idx) => (
               <div key={idx} className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-xs font-bold">
+                <div className="w-8 h-8 rounded-full bg-blue-50 border border-slate-200 flex items-center justify-center text-blue-600 text-xs font-bold">
                   {faculty.name.split(' ').slice(1).map(n => n[0]).join('')}
                 </div>
                 <div className="flex-1">
@@ -293,7 +293,7 @@ export default function AnalyticsTab() {
                     <div 
                       className={cn(
                         "h-full rounded-full",
-                        faculty.workload >= 80 ? "bg-red-500" : faculty.workload >= 60 ? "bg-amber-500" : "bg-green-500"
+                        faculty.workload >= 80 ? "bg-blue-500" : "bg-blue-400"
                       )}
                       style={{ width: `${faculty.workload}%` }} 
                     />

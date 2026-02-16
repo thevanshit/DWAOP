@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Calendar, FileText, Users, Kanban, Settings, 
@@ -225,6 +226,7 @@ const itemVariants = {
 };
 
 export default function FacultyDashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [taskboardType, setTaskboardType] = useState<'academic' | 'admin'>('academic');
@@ -405,6 +407,7 @@ function NavButton({ icon: Icon, label, isActive, collapsed, onClick }: { icon: 
 
 // ==================== DASHBOARD VIEW ====================
 function DashboardView({ todayClasses, analytics, smartStatus, onNavigate }: { todayClasses: any[]; analytics: any; smartStatus: any[]; onNavigate: (tab: TabType) => void }) {
+  const router = useRouter();
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening';
 
@@ -435,7 +438,7 @@ function DashboardView({ todayClasses, analytics, smartStatus, onNavigate }: { t
             </div>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            <button className="px-5 py-3 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all duration-200">
+            <button onClick={() => router.push('/profile')} className="px-5 py-3 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all duration-200">
               <BookMarked className="w-4 h-4" />
               View Profile
             </button>

@@ -144,8 +144,8 @@ function OverviewView() {
       <div className="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl border border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] p-6 md:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-              <ShieldCheck className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-sm">
+              <ShieldCheck className="w-6 h-6 text-blue-600" />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
@@ -155,9 +155,9 @@ function OverviewView() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
-              <p className="text-xs text-green-600 font-medium">System Status</p>
-              <p className="text-sm font-bold text-green-700">Operational</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5">
+              <p className="text-xs text-blue-600 font-medium">System Status</p>
+              <p className="text-sm font-bold text-blue-700">Operational</p>
             </div>
           </div>
         </div>
@@ -166,15 +166,12 @@ function OverviewView() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg transition-shadow">
+          <div key={idx} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-medium text-slate-500">{stat.label}</span>
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                stat.color === 'red' ? 'bg-red-100 text-red-600' :
-                stat.color === 'blue' ? 'bg-blue-100 text-blue-600' :
-                stat.color === 'amber' ? 'bg-amber-100 text-amber-600' :
-                stat.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                'bg-green-100 text-green-600'
+                stat.color === 'red' ? 'bg-blue-50 text-blue-600' :
+                'bg-blue-50 text-blue-600'
               }`}>
                 <stat.icon className="w-5 h-5" />
               </div>
@@ -228,7 +225,7 @@ function QuickAction({ label, icon: Icon, href }: { label: string; icon: React.E
       className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
     >
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+        <div className="w-9 h-9 rounded-lg bg-blue-50 border border-slate-200 text-blue-600 flex items-center justify-center group-hover:bg-blue-100 group-hover:border-blue-300 transition-colors">
           <Icon className="w-4 h-4" />
         </div>
         <span className="text-sm font-medium text-slate-700">{label}</span>
