@@ -420,3 +420,278 @@ export const KANBAN_COLUMNS = [
   { id: 'under_review', label: 'In Review', color: '#FFAB00' },
   { id: 'done', label: 'Done', color: '#36B37E' },
 ];
+
+// ============ LEAVE REQUESTS ============
+export interface LeaveRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  rollNumber: string;
+  batch: string;
+  subject?: string;
+  leaveType: 'medical' | 'academic' | 'personal' | 'emergency' | 'official';
+  startDate: Date;
+  endDate: Date;
+  reason: string;
+  status: 'created' | 'under_review' | 'approved' | 'rejected';
+  appliedDate: Date;
+  reviewedBy?: string;
+  reviewedDate?: Date;
+  comments?: string;
+}
+
+export const LEAVE_REQUESTS: LeaveRequest[] = [
+  {
+    id: 'leave-1',
+    studentId: 's001',
+    studentName: 'Amit Kumar',
+    rollNumber: '21SCSE1001',
+    batch: 'CSE AIML',
+    leaveType: 'medical',
+    startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    endDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+    reason: 'Medical leave for dental surgery - attached medical certificate',
+    status: 'under_review',
+    appliedDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'leave-2',
+    studentId: 's012',
+    studentName: 'Priya Sharma',
+    rollNumber: '21SCSE1012',
+    batch: 'CSE AIML',
+    leaveType: 'academic',
+    startDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    reason: 'Workshop on AI/ML at IIT Delhi - participation confirmed',
+    status: 'created',
+    appliedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'leave-3',
+    studentId: 's023',
+    studentName: 'Rahul Verma',
+    rollNumber: '21SCSE1023',
+    batch: 'CSE',
+    leaveType: 'personal',
+    startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    endDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+    reason: 'Family function - wedding of elder sister',
+    status: 'approved',
+    appliedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    reviewedBy: 'Dr. Vineet Jain',
+    reviewedDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+    comments: 'Approved with submission of invitation card',
+  },
+  {
+    id: 'leave-4',
+    studentId: 's034',
+    studentName: 'Sneha Gupta',
+    rollNumber: '21SIT1034',
+    batch: 'IT',
+    leaveType: 'medical',
+    startDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    endDate: new Date(Date.now()),
+    reason: 'Food poisoning - required rest',
+    status: 'approved',
+    appliedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    reviewedBy: 'Dr. P. K. Gupta',
+    reviewedDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'leave-5',
+    studentId: 's045',
+    studentName: 'Kunal Singh',
+    rollNumber: '21SCSE1045',
+    batch: 'CSE',
+    leaveType: 'official',
+    startDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+    endDate: new Date(Date.now() + 11 * 24 * 60 * 60 * 1000),
+    reason: 'NCC camp - annual training',
+    status: 'under_review',
+    appliedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'leave-6',
+    studentId: 's056',
+    studentName: 'Anjali Patel',
+    rollNumber: '21SCSE1056',
+    batch: 'CSE AIML',
+    leaveType: 'personal',
+    startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+    endDate: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000),
+    reason: 'Personal work',
+    status: 'rejected',
+    appliedDate: new Date(Date.now() - 11 * 24 * 60 * 60 * 1000),
+    reviewedBy: 'Dr. Vineet Jain',
+    reviewedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+    comments: 'Cannot approve - prior intimation required',
+  },
+];
+
+// ============ ANNOUNCEMENTS ============
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  priority: 'normal' | 'important' | 'urgent';
+  batches: string[];
+  subject?: string;
+  createdBy: string;
+  createdAt: Date;
+  status: 'draft' | 'published';
+}
+
+export const ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: 'ann-1',
+    title: 'Mid-Term Examination Schedule',
+    message: 'The Mid-Term examinations will be conducted from March 1-5, 2026. Detailed schedule will be uploaded soon. All students must carry their ID cards.',
+    priority: 'important',
+    batches: ['CSE AIML', 'CSE', 'IT', 'CSE-Yoga'],
+    createdBy: 'Dr. S. K. Singh',
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    status: 'published',
+  },
+  {
+    id: 'ann-2',
+    title: 'OS Assignment Deadline Extended',
+    message: 'The deadline for Operating Systems Assignment 3 has been extended to February 26, 2026 due to technical issues with the submission portal.',
+    priority: 'normal',
+    batches: ['CSE AIML', 'CSE', 'IT'],
+    subject: 'Operating Systems',
+    createdBy: 'Dr. Vineet Jain',
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    status: 'published',
+  },
+  {
+    id: 'ann-3',
+    title: 'Guest Lecture on AI/ML',
+    message: 'Industry expert from Google will deliver a guest lecture on February 18, 2026 at 2 PM in Seminar Hall. Attendance is compulsory for CSE-AIML students.',
+    priority: 'important',
+    batches: ['CSE AIML'],
+    createdBy: 'Dr. R. K. Sharma',
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    status: 'published',
+  },
+  {
+    id: 'ann-4',
+    title: 'Lab Maintenance Notice',
+    message: 'Computer Lab 1 will be closed for maintenance on February 20, 2026. All practical classes stand cancelled for that day.',
+    priority: 'urgent',
+    batches: ['CSE AIML', 'CSE', 'IT'],
+    createdBy: 'Dr. P. K. Gupta',
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    status: 'published',
+  },
+];
+
+// ============ MARKS DATA ============
+export interface StudentMarks {
+  rollNumber: string;
+  name: string;
+  minor1: number | null;
+  minor2: number | null;
+  assignment: number | null;
+  total: number | null;
+}
+
+export interface MarksEntry {
+  id: string;
+  subject: string;
+  subjectId: string;
+  batch: string;
+  examType: 'minor1' | 'minor2' | 'assignment';
+  status: 'draft' | 'under_review' | 'finalized';
+  createdAt: Date;
+  updatedAt: Date;
+  finalizedBy?: string;
+  finalizedAt?: Date;
+  students: StudentMarks[];
+}
+
+export const MARKS_ENTRIES: MarksEntry[] = [
+  {
+    id: 'marks-1',
+    subject: 'Operating Systems',
+    subjectId: 'subj-1',
+    batch: 'CSE AIML',
+    examType: 'minor1',
+    status: 'finalized',
+    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    finalizedBy: 'Dr. Vineet Jain',
+    finalizedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    students: [
+      { rollNumber: '21SCSE1001', name: 'Amit Kumar', minor1: 18, minor2: null, assignment: null, total: 18 },
+      { rollNumber: '21SCSE1002', name: 'Anjali Patel', minor1: 16, minor2: null, assignment: null, total: 16 },
+      { rollNumber: '21SCSE1003', name: 'Rahul Verma', minor1: 20, minor2: null, assignment: null, total: 20 },
+      { rollNumber: '21SCSE1004', name: 'Sneha Gupta', minor1: 15, minor2: null, assignment: null, total: 15 },
+      { rollNumber: '21SCSE1005', name: 'Kunal Singh', minor1: 19, minor2: null, assignment: null, total: 19 },
+    ],
+  },
+  {
+    id: 'marks-2',
+    subject: 'Computer Networks',
+    subjectId: 'subj-2',
+    batch: 'CSE AIML',
+    examType: 'minor1',
+    status: 'under_review',
+    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    students: [
+      { rollNumber: '21SCSE1001', name: 'Amit Kumar', minor1: 17, minor2: null, assignment: null, total: 17 },
+      { rollNumber: '21SCSE1002', name: 'Anjali Patel', minor1: 18, minor2: null, assignment: null, total: 18 },
+      { rollNumber: '21SCSE1003', name: 'Rahul Verma', minor1: 16, minor2: null, assignment: null, total: 16 },
+      { rollNumber: '21SCSE1004', name: 'Sneha Gupta', minor1: 14, minor2: null, assignment: null, total: 14 },
+      { rollNumber: '21SCSE1005', name: 'Kunal Singh', minor1: 19, minor2: null, assignment: null, total: 19 },
+    ],
+  },
+  {
+    id: 'marks-3',
+    subject: 'Operating Systems',
+    subjectId: 'subj-1',
+    batch: 'CSE AIML',
+    examType: 'minor2',
+    status: 'draft',
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    students: [
+      { rollNumber: '21SCSE1001', name: 'Amit Kumar', minor1: 18, minor2: 16, assignment: null, total: null },
+      { rollNumber: '21SCSE1002', name: 'Anjali Patel', minor1: 16, minor2: 15, assignment: null, total: null },
+      { rollNumber: '21SCSE1003', name: 'Rahul Verma', minor1: 20, minor2: 18, assignment: null, total: null },
+      { rollNumber: '21SCSE1004', name: 'Sneha Gupta', minor1: 15, minor2: 14, assignment: null, total: null },
+      { rollNumber: '21SCSE1005', name: 'Kunal Singh', minor1: 19, minor2: 17, assignment: null, total: null },
+    ],
+  },
+];
+
+// ============ STUDENT ANALYTICS ============
+export interface StudentAnalytics {
+  batch: string;
+  subject: string;
+  avgAttendance: number;
+  atRiskStudents: number;
+  totalStudents: number;
+  topPerformers: number;
+  avgMarks: number;
+}
+
+export const STUDENT_ANALYTICS: StudentAnalytics[] = [
+  { batch: 'CSE AIML', subject: 'Operating Systems', avgAttendance: 88, atRiskStudents: 3, totalStudents: 45, topPerformers: 12, avgMarks: 72 },
+  { batch: 'CSE AIML', subject: 'Computer Networks', avgAttendance: 85, atRiskStudents: 5, totalStudents: 45, topPerformers: 10, avgMarks: 68 },
+  { batch: 'CSE AIML', subject: 'Computer Design', avgAttendance: 92, atRiskStudents: 1, totalStudents: 45, topPerformers: 15, avgMarks: 76 },
+  { batch: 'CSE', subject: 'Operating Systems', avgAttendance: 82, atRiskStudents: 8, totalStudents: 55, topPerformers: 14, avgMarks: 65 },
+  { batch: 'CSE', subject: 'Computer Networks', avgAttendance: 79, atRiskStudents: 10, totalStudents: 55, topPerformers: 11, avgMarks: 62 },
+  { batch: 'IT', subject: 'Operating Systems', avgAttendance: 86, atRiskStudents: 4, totalStudents: 48, topPerformers: 13, avgMarks: 70 },
+  { batch: 'CSE-Yoga', subject: 'Computer Design', avgAttendance: 90, atRiskStudents: 2, totalStudents: 30, topPerformers: 8, avgMarks: 74 },
+];
+
+// ============ COMMITTEE MEMBERS ============
+export const COMMITTEE_MEMBERS: Record<string, string[]> = {
+  'Academic Board': ['fac-001', 'fac-002', 'fac-003', 'fac-004', 'fac-005', 'fac-006', 'fac-007', 'fac-008'],
+  'Exam Committee': ['fac-001', 'fac-002', 'fac-004', 'fac-005', 'fac-006', 'fac-007'],
+  'Events Committee': ['fac-003', 'fac-005', 'fac-006', 'fac-007', 'fac-008'],
+  'Accreditation Team': ['fac-001', 'fac-002', 'fac-003', 'fac-004'],
+  'Research Committee': ['fac-002', 'fac-003', 'fac-004', 'fac-005', 'fac-006', 'fac-008'],
+};
