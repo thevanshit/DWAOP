@@ -99,21 +99,21 @@ const ASSIGNMENTS: { id: number; subject: string; category: 'theory' | 'lab'; ti
   { id: 20, subject: 'PY LAB', category: 'lab', title: 'Pandas Data Analysis', description: 'Analyze given dataset using Pandas', type: 'coding', submissionType: 'github', dueDate: '2026-02-15', status: 'submitted', maxMarks: 50, submittedDate: '2026-02-14' },
 ]
 
-const ATTENDANCE_DATA: { date: string; day: string; status: 'present' | 'absent'; time: string }[] = [
-  { date: '2026-02-10', day: 'Mon', status: 'present', time: '09:00' },
-  { date: '2026-02-10', day: 'Mon', status: 'present', time: '10:00' },
-  { date: '2026-02-10', day: 'Mon', status: 'present', time: '11:00' },
-  { date: '2026-02-10', day: 'Mon', status: 'absent', time: '14:00' },
-  { date: '2026-02-11', day: 'Tue', status: 'present', time: '09:00' },
-  { date: '2026-02-11', day: 'Tue', status: 'present', time: '10:00' },
-  { date: '2026-02-11', day: 'Tue', status: 'absent', time: '11:00' },
-  { date: '2026-02-12', day: 'Wed', status: 'present', time: '09:00' },
-  { date: '2026-02-12', day: 'Wed', status: 'present', time: '10:00' },
-  { date: '2026-02-12', day: 'Wed', status: 'present', time: '11:00' },
-  { date: '2026-02-12', day: 'Wed', status: 'present', time: '14:00' },
-  { date: '2026-02-13', day: 'Thu', status: 'present', time: '09:00' },
-  { date: '2026-02-13', day: 'Thu', status: 'absent', time: '10:00' },
-  { date: '2026-02-13', day: 'Thu', status: 'present', time: '11:00' },
+const ATTENDANCE_DATA: { date: string; day: string; status: 'present' | 'absent'; time: string; subject: string }[] = [
+  { date: '2026-02-10', day: 'Mon', status: 'present', time: '09:00', subject: 'Data Structures' },
+  { date: '2026-02-10', day: 'Mon', status: 'present', time: '10:00', subject: 'Database Systems' },
+  { date: '2026-02-10', day: 'Mon', status: 'present', time: '11:00', subject: 'Operating Systems' },
+  { date: '2026-02-10', day: 'Mon', status: 'absent', time: '14:00', subject: 'SE Lab' },
+  { date: '2026-02-11', day: 'Tue', status: 'present', time: '09:00', subject: 'Operating Systems' },
+  { date: '2026-02-11', day: 'Tue', status: 'present', time: '10:00', subject: 'Data Structures' },
+  { date: '2026-02-11', day: 'Tue', status: 'absent', time: '11:00', subject: 'Software Engineering' },
+  { date: '2026-02-12', day: 'Wed', status: 'present', time: '09:00', subject: 'Database Systems' },
+  { date: '2026-02-12', day: 'Wed', status: 'present', time: '10:00', subject: 'Operating Systems' },
+  { date: '2026-02-12', day: 'Wed', status: 'present', time: '11:00', subject: 'Data Structures' },
+  { date: '2026-02-12', day: 'Wed', status: 'present', time: '14:00', subject: 'DBMS Lab' },
+  { date: '2026-02-13', day: 'Thu', status: 'present', time: '09:00', subject: 'Software Engineering' },
+  { date: '2026-02-13', day: 'Thu', status: 'absent', time: '10:00', subject: 'Database Systems' },
+  { date: '2026-02-13', day: 'Thu', status: 'present', time: '11:00', subject: 'AI' },
 ]
 
 const MARKS: { subject: string; subjectCode?: string; minor1: number | null; minor2: number | null; assignment: number | null; total: number | null; status: string }[] = [
