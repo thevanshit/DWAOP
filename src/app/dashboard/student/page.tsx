@@ -14,7 +14,8 @@ import {
   Building2, Bed, Utensils, Phone, MapPin, Trophy, Medal, Flame, Dumbbell,
   Gamepad2, Flag, Star, Ticket, Megaphone, Wifi, Car, Coffee,
   FlaskConical, Bookmark, Scroll, Palmtree, Plane,
-  Send, Paperclip, Filter, Eye, EyeOff, Smile, Frown, Meh, Shield, Moon
+  Send, Paperclip, Filter, Eye, EyeOff, Smile, Frown, Meh, Shield, Moon,
+  X, Upload
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import TimetableViewer from '@/components/dashboard/TimetableViewer'
@@ -60,6 +61,54 @@ const SEMESTER_RESOURCES = [
   { id: 4, title: 'Lab Manual', description: 'Practical experiments and lab guidelines', type: 'lab', file: '#' },
 ]
 
+const SUBJECT_NOTES = [
+  { 
+    id: 1, 
+    subject: 'Operating Systems', 
+    code: 'CS303',
+    topics: ['Process Scheduling', 'Deadlock Prevention', 'Memory Management', 'File Systems'],
+    notes: [
+      { title: 'CPU Scheduling Algorithms', type: 'PDF', pages: 12 },
+      { title: 'Deadlock Notes', type: 'PDF', pages: 8 },
+      { title: 'Memory Management PPT', type: 'PPT', pages: 25 },
+    ]
+  },
+  { 
+    id: 2, 
+    subject: 'Computer Networks', 
+    code: 'CS305',
+    topics: ['OSI Model', 'TCP/IP', 'Routing', 'Network Security'],
+    notes: [
+      { title: 'Networking Fundamentals', type: 'PDF', pages: 15 },
+      { title: 'TCP/IP Notes', type: 'PDF', pages: 10 },
+      { title: 'Routing Protocols', type: 'PDF', pages: 8 },
+    ]
+  },
+  { 
+    id: 3, 
+    subject: 'Software Engineering', 
+    code: 'CS304',
+    topics: ['SDLC', 'UML Diagrams', 'Agile Methods', 'Testing'],
+    notes: [
+      { title: 'SDLC Overview', type: 'PDF', pages: 10 },
+      { title: 'UML Tutorial', type: 'PDF', pages: 18 },
+      { title: 'Agile Methodology', type: 'PPT', pages: 20 },
+    ]
+  },
+  { 
+    id: 4, 
+    subject: 'Data Structures & Algorithms', 
+    code: 'CS301',
+    topics: ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Sorting'],
+    notes: [
+      { title: 'DSA Basics', type: 'PDF', pages: 20 },
+      { title: 'Tree traversals', type: 'PDF', pages: 12 },
+      { title: 'Graph Algorithms', type: 'PDF', pages: 15 },
+      { title: 'Sorting Techniques', type: 'PDF', pages: 10 },
+    ]
+  },
+]
+
 const UPCOMING_CLASSES = [
   { date: '2026-02-17', day: 'Monday', slots: [{ time: '09:00', subject: 'Data Structures', room: 'A101', faculty: 'Dr. Sharma', type: 'Lecture' }, { time: '10:00', subject: 'Database Systems', room: 'A102', faculty: 'Prof. Kumar', type: 'Lecture' }, { time: '14:00', subject: 'SE Lab', room: 'Lab-1', faculty: 'Prof. Verma', type: 'Lab' }] },
   { date: '2026-02-18', day: 'Tuesday', slots: [{ time: '09:00', subject: 'Operating Systems', room: 'A103', faculty: 'Dr. Singh', type: 'Lecture' }, { time: '10:00', subject: 'Data Structures', room: 'A101', faculty: 'Dr. Sharma', type: 'Lecture' }, { time: '11:00', subject: 'Software Engineering', room: 'A104', faculty: 'Prof. Verma', type: 'Lecture' }] },
@@ -81,13 +130,13 @@ const ASSIGNMENTS: { id: number; subject: string; category: 'theory' | 'lab'; ti
   { id: 6, subject: 'AI', category: 'theory', title: 'Search Algorithms Project', description: 'Implement BFS and DFS for puzzle solving', type: 'project', submissionType: 'github', dueDate: '2026-02-28', status: 'pending', maxMarks: 75 },
 ]
 
-const MARKS: { subject: string; subjectCode?: string; minor1: number | null; minor2: number | null; assignment: number | null; total: number | null; status: string }[] = [
-  { subject: 'Data Structures', subjectCode: 'CS301', minor1: 18, minor2: 16, assignment: null, total: 34, status: 'finalized' },
-  { subject: 'Database Systems', subjectCode: 'CS302', minor1: 17, minor2: 15, assignment: null, total: 32, status: 'under_review' },
-  { subject: 'Operating Systems', subjectCode: 'CS303', minor1: 16, minor2: 14, assignment: null, total: 30, status: 'draft' },
-  { subject: 'Software Engineering', subjectCode: 'CS304', minor1: 17, minor2: 16, assignment: null, total: 33, status: 'finalized' },
-  { subject: 'Computer Networks', subjectCode: 'CS305', minor1: 16, minor2: 15, assignment: null, total: 31, status: 'draft' },
-  { subject: 'Web Technologies', subjectCode: 'CS306', minor1: 16, minor2: 14, assignment: null, total: 30, status: 'draft' },
+const MARKS: { subject: string; subjectCode?: string; internal1: number; internal2: number; assignment: number; total: number; status: string }[] = [
+  { subject: 'Data Structures', subjectCode: 'CS301', internal1: 20, internal2: 21, assignment: 0, total: 41, status: 'finalized' },
+  { subject: 'Database Systems', subjectCode: 'CS302', internal1: 21, internal2: 20, assignment: 0, total: 41, status: 'under_review' },
+  { subject: 'Operating Systems', subjectCode: 'CS303', internal1: 20, internal2: 22, assignment: 0, total: 42, status: 'draft' },
+  { subject: 'Software Engineering', subjectCode: 'CS304', internal1: 22, internal2: 21, assignment: 0, total: 43, status: 'finalized' },
+  { subject: 'Computer Networks', subjectCode: 'CS305', internal1: 21, internal2: 20, assignment: 0, total: 41, status: 'draft' },
+  { subject: 'Web Technologies', subjectCode: 'CS306', internal1: 21, internal2: 21, assignment: 0, total: 42, status: 'draft' },
 ]
 
 const TRACK_REPORTS = [
@@ -218,6 +267,12 @@ export default function StudentDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Minor 2 Exam Schedule', message: 'Minor 2 exams from March 1-5, 2026', time: '2 hours ago', read: false, type: 'urgent' },
+    { id: 2, title: 'Assignment Submitted', message: 'Your DBMS assignment has been evaluated', time: '1 day ago', read: true, type: 'success' },
+    { id: 3, title: 'Attendance Warning', message: 'Your attendance dropped below 75% in OS', time: '2 days ago', read: true, type: 'warning' },
+  ])
   
   const currentUser = { name: 'Vanshit Gaur', rollNumber: '240010150100', semester: 4, branch: 'CSE', specialization: 'AI/ML', avatar: 'VG' }
 
@@ -248,10 +303,50 @@ export default function StudentDashboard() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <button className="relative p-2.5 hover:bg-slate-100 rounded-xl transition-all duration-200">
-            <Bell className="w-5 h-5 text-slate-600" />
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white" />
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2.5 hover:bg-slate-100 rounded-xl transition-all duration-200"
+            >
+              <Bell className="w-5 h-5 text-slate-600" />
+              {notifications.some(n => !n.read) && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white" />
+              )}
+            </button>
+            {showNotifications && (
+              <div className="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                  <span className="font-semibold text-slate-800">Notifications</span>
+                  <button 
+                    onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Mark all read
+                  </button>
+                </div>
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.map((notif) => (
+                    <div 
+                      key={notif.id} 
+                      className={`px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors ${!notif.read ? 'bg-blue-50/50' : ''}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-2 h-2 rounded-full mt-2 ${notif.type === 'urgent' ? 'bg-red-500' : notif.type === 'success' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-800">{notif.title}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">{notif.message}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">{notif.time}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="px-4 py-2 bg-slate-50 text-center">
+                  <button className="text-xs text-blue-600 font-medium hover:underline">View All Notifications</button>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200">
             <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-blue-50/50">
               {currentUser.avatar}
@@ -396,9 +491,9 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
 
   const quickStats = [
     { label: 'Attendance', value: `${overallAttendance}%`, sub: 'Above 75%', icon: Calendar, color: 'blue', trend: 'up' },
-    { label: 'CGPA', value: analytics.cgpa.toString(), sub: 'Out of 10.0', icon: Award, color: 'green', trend: 'up' },
+    { label: 'Internal Marks', value: '120/180', sub: '6 Subjects', icon: Award, color: 'green', trend: 'up' },
     { label: 'Pending', value: pendingAssignmentsCount.toString(), sub: 'Assignments', icon: FileText, color: 'amber', trend: 'down' },
-    { label: 'Rank', value: `#${analytics.rank}`, sub: `In ${analytics.totalStudents} students`, icon: TrendingUp, color: 'purple', trend: 'up' },
+    { label: 'Eligible', value: eligibility.status, sub: 'For Exams', icon: CheckCircle, color: eligibility.color === 'green' ? 'green' : eligibility.color === 'yellow' ? 'amber' : 'red', trend: 'up' },
   ]
 
   const getSmartStatus = () => {
@@ -669,10 +764,10 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={cn("text-xs font-semibold", 
-                      (mark.minor1 || 0) + (mark.minor2 || 0) >= 24 ? "text-blue-600" : 
-                      (mark.minor1 || 0) + (mark.minor2 || 0) >= 18 ? "text-amber-600" : "text-red-600"
+                      mark.total >= 24 ? "text-blue-600" : 
+                      mark.total >= 18 ? "text-amber-600" : "text-red-600"
                     )}>
-                      {(mark.minor1 || 0) + (mark.minor2 || 0)}/40
+                      {mark.total}/30
                     </span>
                     <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-medium", 
                       mark.status === 'finalized' ? "bg-blue-50 text-blue-600" : 
@@ -684,25 +779,25 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
                 </div>
                 <div className="grid grid-cols-3 gap-2 mb-1">
                   <div className="bg-slate-50 rounded-lg p-2 text-center">
-                    <p className="text-[10px] text-slate-400">Minor I</p>
-                    <p className="text-xs font-semibold text-slate-700">{mark.minor1 || '-'}/20</p>
+                    <p className="text-[10px] text-slate-400">Internal I</p>
+                    <p className="text-xs font-semibold text-slate-700">{mark.internal1}/15</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-2 text-center">
-                    <p className="text-[10px] text-slate-400">Minor II</p>
-                    <p className="text-xs font-semibold text-slate-700">{mark.minor2 || '-'}/20</p>
+                    <p className="text-[10px] text-slate-400">Internal II</p>
+                    <p className="text-xs font-semibold text-slate-700">{mark.internal2}/15</p>
                   </div>
                   <div className="bg-blue-50 rounded-lg p-2 text-center">
                     <p className="text-[10px] text-blue-400">Total</p>
-                    <p className="text-xs font-bold text-blue-600">{(mark.minor1 || 0) + (mark.minor2 || 0)}/40</p>
+                    <p className="text-xs font-bold text-blue-600">{mark.total}/30</p>
                   </div>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-1.5">
                   <div 
                     className={cn("h-1.5 rounded-full", 
-                      (mark.minor1 || 0) + (mark.minor2 || 0) >= 30 ? "bg-blue-500" : 
-                      (mark.minor1 || 0) + (mark.minor2 || 0) >= 24 ? "bg-amber-500" : "bg-red-500"
+                      mark.total >= 24 ? "bg-blue-500" : 
+                      mark.total >= 18 ? "bg-amber-500" : "bg-red-500"
                     )} 
-                    style={{ width: `${Math.min(((mark.minor1 || 0) + (mark.minor2 || 0)) / 40 * 100, 100)}%` }} 
+                    style={{ width: `${Math.min((mark.total / 30) * 100, 100)}%` }} 
                   />
                 </div>
               </div>
@@ -712,7 +807,7 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500">Class Average</span>
               <span className="text-sm font-bold text-blue-600">
-                {Math.round(MARKS.filter(m => m.total !== null).reduce((sum, m) => sum + ((m.minor1 || 0) + (m.minor2 || 0)), 0) / MARKS.filter(m => m.total !== null).length)}/40
+                {Math.round(MARKS.reduce((sum, m) => sum + m.total, 0) / MARKS.length)}/30
               </span>
             </div>
           </div>
@@ -720,7 +815,7 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
       </div>
 
       {/* Semester Resources */}
-      <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-50 border border-slate-200 rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
@@ -756,6 +851,52 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
         </div>
       </motion.div>
 
+      {/* Subject Notes */}
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center text-purple-600 shadow-sm">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-800 text-base">Subject Notes</h3>
+              <p className="text-xs text-slate-500">Study materials for each subject</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-5">
+          <div className="grid md:grid-cols-2 gap-4">
+            {SUBJECT_NOTES.map((subject) => (
+              <div key={subject.id} className="p-4 rounded-xl border border-slate-200 hover:border-purple-300 transition-all hover:shadow-md bg-slate-50/50">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-sm text-slate-800">{subject.subject}</p>
+                    <p className="text-xs text-slate-500">{subject.code}</p>
+                  </div>
+                  <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-full font-medium">
+                    {subject.notes.length} notes
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {subject.notes.map((note, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-100 hover:border-purple-200 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs text-slate-700">{note.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-400">{note.pages} pages</span>
+                        <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{note.type}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
       {/* Today's Schedule (Compact) */}
       <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
@@ -777,33 +918,6 @@ function OverviewView({ analytics, currentUser }: { analytics: any; currentUser:
           ))}
         </div>
       </motion.div>
-
-      {/* Subject Overview */}
-      <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-slate-900 mb-4">Subject Overview</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {SUBJECTS.slice(0, 6).map((subject) => (
-            <div key={subject.id} className="p-3 bg-slate-50/80 rounded-xl border border-slate-100">
-              <p className="text-xs font-semibold text-slate-900 truncate">{subject.code}</p>
-              <p className="text-[10px] text-slate-500 truncate">{subject.name}</p>
-              <div className="mt-2">
-                <div className="flex items-center justify-between text-[10px] mb-1">
-                  <span className="text-slate-500">Attendance</span>
-                  <span className={cn("font-medium", subject.attendance >= 75 ? "text-green-600" : subject.attendance >= 65 ? "text-amber-600" : "text-red-600")}>
-                    {subject.attendance}%
-                  </span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5">
-                  <div 
-                    className={cn("h-1.5 rounded-full", subject.attendance >= 75 ? "bg-green-500" : subject.attendance >= 65 ? "bg-amber-500" : "bg-red-500")} 
-                    style={{ width: `${subject.attendance}%` }} 
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
     </div>
   )
 }
@@ -814,13 +928,14 @@ function QuickStatCard({ label, value, icon: Icon, color, trend, sub }: any) {
     green: 'from-green-50 to-green-100 text-green-700',
     amber: 'from-amber-50 to-amber-100 text-amber-700',
     purple: 'from-purple-50 to-purple-100 text-purple-700',
+    red: 'from-red-50 to-red-100 text-red-700',
   }
 
   return (
-    <motion.div variants={itemVariants} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+    <motion.div variants={itemVariants} className="bg-white rounded-2xl p-5 border border-slate-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.06)] hover:border-slate-300/60 transition-all duration-300">
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-medium text-slate-500">{label}</span>
-        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", colorMap[color])}>
+        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shadow-sm", colorMap[color])}>
           <Icon className="w-4 h-4" />
         </div>
       </div>
@@ -873,8 +988,20 @@ function TimetableView() {
 // ==================== ASSIGNMENTS VIEW ====================
 function AssignmentsView() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'submitted' | 'evaluated'>('all')
+  const [showSubmitModal, setShowSubmitModal] = useState(false)
+  const [selectedAssignment, setSelectedAssignment] = useState<any>(null)
+  const [submissionType, setSubmissionType] = useState<'file' | 'text' | 'github'>('file')
+  const [submissionText, setSubmissionText] = useState('')
+  const [githubLink, setGithubLink] = useState('')
 
   const filteredAssignments = filter === 'all' ? ASSIGNMENTS : ASSIGNMENTS.filter(a => a.status === filter)
+
+  const handleSubmit = () => {
+    setShowSubmitModal(false)
+    setSelectedAssignment(null)
+    setSubmissionText('')
+    setGithubLink('')
+  }
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -930,7 +1057,10 @@ function AssignmentsView() {
                 {a.marks !== undefined && <span className="text-green-600 font-medium">Marks: {a.marks}</span>}
               </div>
               {a.status === 'pending' && (
-                <button className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700">
+                <button 
+                  onClick={() => { setSelectedAssignment(a); setShowSubmitModal(true); }}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
+                >
                   Submit Now
                 </button>
               )}
@@ -938,6 +1068,110 @@ function AssignmentsView() {
           </div>
         ))}
       </div>
+
+      {/* Submit Assignment Modal */}
+      {showSubmitModal && selectedAssignment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Submit Assignment</h3>
+                <p className="text-sm text-slate-500">{selectedAssignment.title}</p>
+              </div>
+              <button 
+                onClick={() => setShowSubmitModal(false)}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{selectedAssignment.subject}</p>
+                  <p className="text-xs text-slate-500">Due: {selectedAssignment.dueDate} • Max: {selectedAssignment.maxMarks} marks</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-2 block">Submission Type</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['file', 'text', 'github'] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setSubmissionType(type)}
+                      className={cn(
+                        "px-3 py-2.5 rounded-xl text-sm font-medium transition-all capitalize",
+                        submissionType === type 
+                          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25" 
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      )}
+                    >
+                      {type === 'github' ? 'GitHub' : type === 'text' ? 'Text' : 'File'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {submissionType === 'file' && (
+                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-colors cursor-pointer">
+                  <Upload className="w-10 h-10 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-slate-700">Click to upload file</p>
+                  <p className="text-xs text-slate-500 mt-1">PDF, DOC, or ZIP files only</p>
+                </div>
+              )}
+
+              {submissionType === 'text' && (
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">Your Answer</label>
+                  <textarea
+                    value={submissionText}
+                    onChange={(e) => setSubmissionText(e.target.value)}
+                    placeholder="Type your answer here..."
+                    className="w-full h-40 px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
+              )}
+
+              {submissionType === 'github' && (
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-2 block">GitHub Repository Link</label>
+                  <input
+                    type="url"
+                    value={githubLink}
+                    onChange={(e) => setGithubLink(e.target.value)}
+                    placeholder="https://github.com/username/repo"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={() => setShowSubmitModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSubmit}
+                  className="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Submit
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
@@ -959,30 +1193,36 @@ function AttendanceView() {
       <h2 className="text-xl font-bold text-slate-900">Attendance Tracking</h2>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Overall Attendance</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-slate-500">Overall Attendance</span>
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+              <Calendar className="w-5 h-5" />
+            </div>
+          </div>
           <p className="text-3xl font-bold text-slate-900">{overallAttendance}%</p>
           <p className="text-xs text-slate-400 mt-1">{totalPresent}/{totalClasses} classes attended</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Exam Eligibility</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-slate-500">Exam Eligibility</span>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${overallAttendance >= 75 ? 'bg-green-50 text-green-600' : overallAttendance >= 65 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'}`}>
+              {overallAttendance >= 75 ? <CheckCircle className="w-5 h-5" /> : overallAttendance >= 65 ? <AlertCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            {(() => {
-              const eligibility = getEligibilityStatus(overallAttendance)
-              const Icon = eligibility.icon
-              return (
-                <>
-                  <Icon className={cn("w-6 h-6", eligibility.color === 'green' ? "text-green-600" : eligibility.color === 'yellow' ? "text-amber-600" : "text-red-600")} />
-                  <span className={cn("text-lg font-bold", eligibility.color === 'green' ? "text-green-600" : eligibility.color === 'yellow' ? "text-amber-600" : "text-red-600")}>
-                    {eligibility.status}
-                  </span>
-                </>
-              )
-            })()}
+            <span className={cn("text-xl font-bold", overallAttendance >= 75 ? "text-green-600" : overallAttendance >= 65 ? "text-amber-600" : "text-red-600")}>
+              {overallAttendance >= 75 ? 'Eligible' : overallAttendance >= 65 ? 'At Risk' : 'Not Eligible'}
+            </span>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Required for 75%</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-slate-500">Required for 75%</span>
+            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
+              <Target className="w-5 h-5" />
+            </div>
+          </div>
           <p className="text-3xl font-bold text-slate-900">
             {Math.max(0, Math.ceil((0.75 * totalClasses) - totalPresent))}
           </p>
@@ -990,13 +1230,13 @@ function AttendanceView() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+      <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
         <h3 className="text-base font-semibold text-slate-900 mb-4">Subject-wise Attendance</h3>
         <div className="space-y-4">
           {SUBJECTS.map((subject) => {
             const eligibility = getEligibilityStatus(subject.attendance)
             return (
-              <div key={subject.id}>
+              <div key={subject.id} className="p-4 bg-slate-50/50 rounded-xl hover:bg-slate-50 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{subject.name}</p>
@@ -1009,7 +1249,7 @@ function AttendanceView() {
                     <eligibility.icon className={cn("w-4 h-4", eligibility.color === 'green' ? "text-green-600" : eligibility.color === 'yellow' ? "text-amber-600" : "text-red-600")} />
                   </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2">
+                <div className="w-full bg-slate-200 rounded-full h-2">
                   <div 
                     className={cn("h-2 rounded-full transition-all", eligibility.color === 'green' ? "bg-green-500" : eligibility.color === 'yellow' ? "bg-amber-500" : "bg-red-500")} 
                     style={{ width: `${subject.attendance}%` }} 
@@ -1035,7 +1275,7 @@ function MarksView() {
     }
   }
 
-  const totalMarks = MARKS.reduce((sum, m) => sum + (m.total || 0), 0)
+  const totalMarks = MARKS.reduce((sum, m) => sum + m.total, 0)
   const maxMarks = MARKS.length * 30
   const average = Math.round((totalMarks / maxMarks) * 100)
 
@@ -1044,28 +1284,43 @@ function MarksView() {
       <h2 className="text-xl font-bold text-slate-900">Marks & Grades</h2>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Total Internal Marks</p>
-          <p className="text-3xl font-bold text-slate-900">{totalMarks}</p>
-          <p className="text-xs text-slate-400 mt-1">out of {maxMarks}</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-slate-500">Total Internal Marks</span>
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+              <Award className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-900">{totalMarks}/{maxMarks}</p>
+          <p className="text-xs text-slate-400 mt-1">6 subjects × 30 marks</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Average</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-slate-500">Average</span>
+            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
           <p className="text-3xl font-bold text-blue-600">{average}%</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-          <p className="text-xs text-slate-500 mb-1">Subjects</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-slate-500">Subjects</span>
+            <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+              <BookOpen className="w-5 h-5" />
+            </div>
+          </div>
           <p className="text-3xl font-bold text-slate-900">{MARKS.length}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden">
         <table className="w-full">
           <thead className="bg-slate-50">
             <tr>
               <th className="text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Subject</th>
-              <th className="text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Minor 1</th>
-              <th className="text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Minor 2</th>
+              <th className="text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Internal I</th>
+              <th className="text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Internal II</th>
               <th className="text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Total</th>
               <th className="text-center text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">Status</th>
             </tr>
@@ -1077,10 +1332,10 @@ function MarksView() {
                   <p className="text-sm font-medium text-slate-900">{mark.subject}</p>
                   <p className="text-[10px] text-slate-500">{mark.subjectCode}</p>
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-slate-700">{mark.minor1 ?? '-'}</td>
-                <td className="px-4 py-3 text-center text-sm text-slate-700">{mark.minor2 ?? '-'}</td>
+                <td className="px-4 py-3 text-center text-sm text-slate-700">{mark.internal1}</td>
+                <td className="px-4 py-3 text-center text-sm text-slate-700">{mark.internal2}</td>
                 <td className="px-4 py-3 text-center">
-                  <span className="text-sm font-bold text-slate-900">{mark.total ?? '-'}</span>
+                  <span className="text-sm font-bold text-slate-900">{mark.total}</span>
                   <span className="text-[10px] text-slate-400">/30</span>
                 </td>
                 <td className="px-4 py-3 text-center">
@@ -1099,19 +1354,15 @@ function MarksView() {
 
 // ==================== TRACK REPORT VIEW ====================
 function TrackReportView() {
-  const [selectedSemester, setSelectedSemester] = useState(3)
-  const [showDetails, setShowDetails] = useState(false)
-
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'locked': return { bg: 'bg-slate-100', text: 'text-slate-600', icon: Lock }
-      case 'in_progress': return { bg: 'bg-blue-50', text: 'text-blue-600', icon: Clock }
-      default: return { bg: 'bg-green-50', text: 'text-green-600', icon: CheckCircle }
+      case 'locked': return { bg: 'bg-green-50', text: 'text-green-600', icon: CheckCircle, label: 'Completed' }
+      case 'in_progress': return { bg: 'bg-blue-50', text: 'text-blue-600', icon: Clock, label: 'In Progress' }
+      default: return { bg: 'bg-slate-50', text: 'text-slate-600', icon: Lock, label: 'Locked' }
     }
   }
 
-  const currentReport = TRACK_REPORTS[selectedSemester]
-  const semesterDetail = TRACK_SEMESTER_DETAILS[selectedSemester]
+  const overallCGPA = 8.2
 
   return (
     <div className="space-y-6">
@@ -1123,167 +1374,184 @@ function TrackReportView() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-900">Track Report</h2>
-            <p className="text-sm text-slate-500">Academic performance & progress</p>
+            <p className="text-sm text-slate-500">Academic performance across semesters</p>
           </div>
         </div>
-        <button className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 flex items-center gap-2 shadow-sm">
+        <button className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-500/25">
           <Download className="w-4 h-4" />
-          Download Report
+          Download DMC
         </button>
       </div>
 
-      {/* Semester Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {TRACK_REPORTS.map((report, idx) => (
-          <button
-            key={idx}
-            onClick={() => setSelectedSemester(idx)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
-              selectedSemester === idx
-                ? "bg-blue-600 text-white shadow-sm"
-                : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
-            )}
-          >
-            {report.status === 'locked' && <Lock className="w-4 h-4" />}
-            {report.semester}
-          </button>
-        ))}
-      </div>
-
-      {/* Stats Cards */}
+      {/* Overall Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-slate-500 font-medium">Attendance</span>
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-              <Calendar className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-slate-900">{currentReport.attendance || 0}%</p>
-          <div className="mt-2 w-full bg-slate-100 rounded-full h-1.5">
-            <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${currentReport.attendance || 0}%` }} />
-          </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <p className="text-xs text-slate-500 mb-1">Overall CGPA</p>
+          <p className="text-3xl font-bold text-slate-900">{overallCGPA}</p>
+          <p className="text-xs text-slate-400 mt-1">Out of 10.0</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-slate-500 font-medium">Total Marks</span>
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-              <Award className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-slate-900">{currentReport.marks || '—'}</p>
-          <p className="text-xs text-slate-500 mt-1">Out of 300</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <p className="text-xs text-slate-500 mb-1">Semesters Completed</p>
+          <p className="text-3xl font-bold text-slate-900">3</p>
+          <p className="text-xs text-slate-400 mt-1">Out of 8</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-slate-500 font-medium">CGPA</span>
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-              <GraduationCap className="w-5 h-5" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-slate-900">{currentReport.cgpa || '—'}</p>
-          <p className="text-xs text-slate-500 mt-1">Out of 10.0</p>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <p className="text-xs text-slate-500 mb-1">Average Attendance</p>
+          <p className="text-3xl font-bold text-slate-900">82%</p>
+          <p className="text-xs text-slate-400 mt-1">All semesters</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-slate-500 font-medium">Status</span>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusStyle(currentReport.status).bg} ${getStatusStyle(currentReport.status).text}`}>
-              {(() => { const Icon = getStatusStyle(currentReport.status).icon; return <Icon className="w-5 h-5" /> })()}
-            </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <p className="text-xs text-slate-500 mb-1">Current Status</p>
+          <div className="flex items-center gap-2 mt-1">
+            <Clock className="w-5 h-5 text-blue-600" />
+            <span className="text-lg font-bold text-blue-600">Sem 4 On Going</span>
           </div>
-          <p className={`text-lg font-bold ${getStatusStyle(currentReport.status).text}`}>
-            {currentReport.status === 'in_progress' ? 'In Progress' : currentReport.status === 'locked' ? 'Locked' : 'Active'}
-          </p>
         </div>
       </div>
 
-      {/* Semester Progress Timeline */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="font-semibold text-slate-900">Semester Progress</h3>
-          <button 
-            onClick={() => setShowDetails(!showDetails)}
-            className="text-sm text-blue-600 hover:underline flex items-center gap-1"
-          >
-            {showDetails ? 'Hide Details' : 'View Details'}
-            <ChevronDown className={cn("w-4 h-4 transition-transform", showDetails && "rotate-180")} />
-          </button>
-        </div>
-        <div className="p-6">
-          <div className="flex items-center justify-between">
-            {['Draft', 'Submitted', 'Review', 'Finalized', 'Locked'].map((step, idx) => {
-              const stepStatus = currentReport.status === 'locked' ? 'completed' : idx < 4 ? 'current' : 'pending'
-              return (
-                <div key={idx} className="flex items-center">
-                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all",
-                    stepStatus === 'completed' ? 'bg-green-500 text-white' :
-                    stepStatus === 'current' ? 'bg-blue-500 text-white ring-4 ring-blue-100' :
-                    'bg-slate-100 text-slate-400'
-                  )}>
-                    {stepStatus === 'completed' ? <CheckCircle className="w-5 h-5" /> : idx + 1}
-                  </div>
-                  {idx < 4 && (
-                    <div className={cn("w-16 h-1 mx-2 rounded", stepStatus === 'completed' ? 'bg-green-500' : 'bg-slate-200')} />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
+      {/* Semester List */}
+      <div className="space-y-4">
+        <h3 className="text-base font-semibold text-slate-800">Semester Details</h3>
         
-        {/* Detailed Subject Marks */}
-        {showDetails && semesterDetail && (
-          <div className="px-6 pb-6 border-t border-slate-100 pt-4">
-            <h4 className="text-sm font-semibold text-slate-700 mb-4">Subject-wise Marks - {semesterDetail.semester}</h4>
-            <div className="space-y-3">
-              {semesterDetail.subjects.map((sub, idx) => (
-                <div key={idx} className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-900">{sub.name}</p>
-                  </div>
-                  <div className="w-32">
-                    <div className="w-full bg-slate-200 rounded-full h-2">
-                      <div 
-                        className={cn("h-2 rounded-full", sub.marks >= 80 ? "bg-green-500" : sub.marks >= 60 ? "bg-amber-500" : "bg-red-500")} 
-                        style={{ width: `${sub.marks}%` }} 
-                      />
-                    </div>
-                  </div>
-                  <div className="w-16 text-right">
-                    <span className={cn("text-sm font-bold", sub.marks >= 80 ? "text-green-600" : sub.marks >= 60 ? "text-amber-600" : "text-red-600")}>
-                      {sub.marks}
-                    </span>
-                  </div>
-                  <div className="w-12 text-right">
-                    <span className={cn("text-sm font-bold px-2 py-0.5 rounded", 
-                      sub.grade.startsWith('A') ? "bg-green-100 text-green-700" : 
-                      sub.grade.startsWith('B') ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"
-                    )}>
-                      {sub.grade}
-                    </span>
-                  </div>
+        {/* Semester 1 */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-slate-900">Semester 1</h4>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Completed</span>
                 </div>
-              ))}
+                <p className="text-sm text-slate-500">Academic Year 2024-25</p>
+              </div>
+            </div>
+            <button className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-medium flex items-center gap-1">
+              <Download className="w-4 h-4" />
+              DMC
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div>
+              <p className="text-xs text-slate-500">CGPA</p>
+              <p className="text-xl font-bold text-slate-900">8.2</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Attendance</p>
+              <p className="text-xl font-bold text-slate-900">82%</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Subjects</p>
+              <p className="text-xl font-bold text-slate-900">5</p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* GPA Trend */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-        <h3 className="font-semibold text-slate-900 mb-4">CGPA Trend</h3>
-        <div className="flex items-end gap-3 h-32">
-          {TRACK_REPORTS.filter(r => r.cgpa).map((report, idx) => (
-            <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-              <div 
-                className="w-full bg-blue-500 rounded-t-md"
-                style={{ height: `${(report.cgpa || 0) * 10}%` }}
-              />
-              <span className="text-xs text-slate-500">{report.semester.split(' ')[1]}</span>
-              <span className="text-sm font-bold text-slate-700">{report.cgpa}</span>
+        {/* Semester 2 */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-slate-900">Semester 2</h4>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Completed</span>
+                </div>
+                <p className="text-sm text-slate-500">Academic Year 2024-25</p>
+              </div>
             </div>
-          ))}
+            <button className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-medium flex items-center gap-1">
+              <Download className="w-4 h-4" />
+              DMC
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div>
+              <p className="text-xs text-slate-500">CGPA</p>
+              <p className="text-xl font-bold text-slate-900">7.9</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Attendance</p>
+              <p className="text-xl font-bold text-slate-900">78%</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Subjects</p>
+              <p className="text-xl font-bold text-slate-900">5</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Semester 3 */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-slate-900">Semester 3</h4>
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Completed</span>
+                </div>
+                <p className="text-sm text-slate-500">Academic Year 2025-26</p>
+              </div>
+            </div>
+            <button className="px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-medium flex items-center gap-1">
+              <Download className="w-4 h-4" />
+              DMC
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div>
+              <p className="text-xs text-slate-500">CGPA</p>
+              <p className="text-xl font-bold text-slate-900">8.4</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Attendance</p>
+              <p className="text-xl font-bold text-slate-900">85%</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Subjects</p>
+              <p className="text-xl font-bold text-slate-900">5</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Semester 4 - Ongoing */}
+        <div className="bg-white rounded-2xl border-2 border-blue-200 p-5 shadow-[0_4px_12px_rgba(37,99,235,0.15)] bg-blue-50/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-semibold text-slate-900">Semester 4</h4>
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">In Progress</span>
+                </div>
+                <p className="text-sm text-slate-500">Academic Year 2025-26 • Current</p>
+              </div>
+            </div>
+            <span className="text-xs text-blue-600 font-medium">Ongoing</span>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-blue-100">
+            <div>
+              <p className="text-xs text-blue-500">CGPA</p>
+              <p className="text-xl font-bold text-blue-600">—</p>
+            </div>
+            <div>
+              <p className="text-xs text-blue-500">Attendance</p>
+              <p className="text-xl font-bold text-blue-600">79%</p>
+            </div>
+            <div>
+              <p className="text-xs text-blue-500">Subjects</p>
+              <p className="text-xl font-bold text-blue-600">6</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

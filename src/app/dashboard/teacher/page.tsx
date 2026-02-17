@@ -11,7 +11,7 @@ import {
   BookMarked, ClipboardList, BarChart, Megaphone, Search, Filter, Upload,
   Download, Eye, Edit, Trash2, Save, UserMinus, UserPlus, Clock3, Check,
   AlertCircle, Pin, Archive, PanelLeftClose, PanelLeft, ArrowUpRight, ArrowDownRight,
-  BookOpen, GraduationCap, Target, Activity, Sparkles
+  BookOpen, GraduationCap, Target, Activity, Sparkles, Mail, Phone, User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -229,12 +229,13 @@ export default function FacultyDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [taskboardType, setTaskboardType] = useState<'academic' | 'admin'>('academic');
   const [taskFilter, setTaskFilter] = useState<'all' | 'urgent' | 'thisweek'>('all');
   const [selectedBatch, setSelectedBatch] = useState(BATCHES[0].id);
   const [selectedAssignment, setSelectedAssignment] = useState<number | null>(null);
   const [announcementType, setAnnouncementType] = useState<'toStudents' | 'fromAdmin'>('toStudents');
   const [attendance, setAttendance] = useState<Record<number, 'present' | 'absent' | 'late'>>({});
+  const [showNewAssignment, setShowNewAssignment] = useState(false);
+  const [showAddTask, setShowAddTask] = useState(false);
 
   const currentUser = { name: 'Dr. Vineet Jain', role: 'Assistant Professor', avatar: 'VJ' };
 
@@ -368,17 +369,19 @@ export default function FacultyDashboard() {
             {activeTab === 'dashboard' && <DashboardView todayClasses={todayClasses} analytics={analytics} smartStatus={SMART_STATUS} onNavigate={setActiveTab} />}
             {activeTab === 'batches' && <BatchesView batches={BATCHES} selectedBatch={selectedBatch} onSelectBatch={setSelectedBatch} />}
             {activeTab === 'timetable' && <TimetableView />}
-            {activeTab === 'tasks' && <TaskboardView type={taskboardType} setType={setTaskboardType} filter={taskFilter} setFilter={setTaskFilter} />}
-            {activeTab === 'attendance' && <AttendanceView batches={BATCHES} selectedBatch={selectedBatch} onSelectBatch={setSelectedBatch} students={currentStudents} attendance={attendance} onMarkAttendance={handleAttendanceMark} onMarkAllPresent={handleMarkAllPresent} onMarkAllAbsent={handleMarkAllAbsent} />}
-            {activeTab === 'assignments' && <AssignmentsView batches={BATCHES} assignments={ASSIGNMENTS} />}
+            {activeTab === 'tasks' && <TaskboardView filter={taskFilter} setFilter={setTaskFilter} onAddTask={() => setShowAddTask(true)} />}
             {activeTab === 'marks' && <MarksEntryView batches={BATCHES} selectedBatch={selectedBatch} onSelectBatch={setSelectedBatch} assignments={ASSIGNMENTS} selectedAssignment={selectedAssignment} onSelectAssignment={setSelectedAssignment} marksData={MARKS_DATA} />}
-            {activeTab === 'analytics' && <AnalyticsView batches={BATCHES} analytics={ANALYTICS_DATA} />}
+            {activeTab === 'analytics' && <AnalyticsView batches={BATCHES} analytics={ANALYTICS_DATA} onNewAssignment={() => setShowNewAssignment(true)} />}
             {activeTab === 'announcements' && <AnnouncementsView type={announcementType} setType={setAnnouncementType} announcements={ANNOUNCEMENTS} />}
             {activeTab === 'directory' && <DirectoryView faculty={FACULTY_DIRECTORY} />}
             {activeTab === 'settings' && <SettingsView />}
           </motion.div>
         </AnimatePresence>
         </div>
+
+        {/* Modals */}
+        <NewAssignmentModal isOpen={showNewAssignment} onClose={() => setShowNewAssignment(false)} batches={BATCHES} />
+        <AddTaskModal isOpen={showAddTask} onClose={() => setShowAddTask(false)} />
       </main>
     </div>
   );
@@ -437,70 +440,96 @@ function DashboardView({ todayClasses, analytics, smartStatus, onNavigate }: { t
               </div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <button onClick={() => router.push('/profile')} className="px-5 py-3 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all duration-200">
-              <BookMarked className="w-4 h-4" />
-              View Profile
-            </button>
-          </div>
         </div>
       </motion.div>
 
       {/* Smart Status Row */}
       <motion.div variants={itemVariants} className="flex flex-wrap gap-2.5">
         {smartStatus.map((status, i) => (
-          <div
+          <motion.div
             key={i}
+            whileHover={{ scale: 1.02 }}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border backdrop-blur-sm",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium border backdrop-blur-sm shadow-sm",
               status.type === 'urgent' ? "bg-red-50/80 text-red-700 border-red-200" :
               status.type === 'success' ? "bg-green-50/80 text-green-700 border-green-200" :
               status.type === 'warning' ? "bg-amber-50/80 text-amber-700 border-amber-200" :
               "bg-blue-50/80 text-blue-700 border-blue-200"
             )}
           >
-            <status.icon className="w-3.5 h-3.5" />
+            <status.icon className="w-4 h-4" />
             {status.text}
-          </div>
+          </motion.div>
         ))}
       </motion.div>
 
-      {/* Stats Cards - QuickStat Style */}
+      {/* Stats Cards - Improved Card Style */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {quickStats.map((stat, i) => (
-          <QuickStatCard key={i} {...stat} />
+          <motion.div 
+            key={i}
+            variants={itemVariants}
+            whileHover={{ y: -2 }}
+            className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-slate-500">{stat.label}</span>
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
+                stat.color === 'blue' ? "bg-gradient-to-br from-blue-50 to-blue-100" :
+                stat.color === 'green' ? "bg-gradient-to-br from-green-50 to-green-100" :
+                stat.color === 'amber' ? "bg-gradient-to-br from-amber-50 to-amber-100" :
+                "bg-gradient-to-br from-purple-50 to-purple-100"
+              )}>
+                <stat.icon className={cn("w-5 h-5", 
+                  stat.color === 'blue' ? "text-blue-600" :
+                  stat.color === 'green' ? "text-green-600" :
+                  stat.color === 'amber' ? "text-amber-600" :
+                  "text-purple-600"
+                )} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
+              {stat.suffix && <p className="text-xs text-slate-500">{stat.suffix}</p>}
+            </div>
+          </motion.div>
         ))}
       </motion.div>
 
       {/* Today's Schedule & Quick Actions */}
-      <div className="grid grid-cols-[2fr_1fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
         {/* Today's Schedule */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-slate-900">Today&apos;s Schedule</h3>
             <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">Today</span>
           </div>
           <div className="space-y-2">
             {todayClasses.map((cls, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 bg-slate-50/80 rounded-xl hover:bg-slate-100 transition-colors">
-                <div className={cn("w-1 h-10 rounded-full", i === 0 ? "bg-blue-600" : cls.type === 'Lab' ? "bg-slate-300" : "bg-slate-200")} />
+              <motion.div 
+                key={i} 
+                whileHover={{ x: 4 }}
+                className="flex items-center gap-3 p-3 bg-slate-50/80 rounded-xl hover:bg-blue-50/50 transition-colors cursor-pointer group"
+              >
+                <div className={cn("w-1 h-12 rounded-full", i === 0 ? "bg-blue-600" : cls.type === 'Lab' ? "bg-slate-400" : "bg-slate-300")} />
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-900">{cls.subject}</p>
+                  <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{cls.subject}</p>
                   <p className="text-xs text-slate-500">{cls.batch} {cls.group && `(${cls.group})`} • {cls.room}</p>
                 </div>
-                <div className="w-16 text-right">
+                <div className="text-right">
                   <p className="text-xs font-medium text-slate-600">{cls.time}</p>
                   <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded", cls.type === 'Lecture' ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-600")}>
                     {cls.type}
                   </span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* Quick Actions */}
-        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
           <h3 className="text-base font-semibold text-slate-900 mb-4">Quick Actions</h3>
           <div className="space-y-2">
             <QuickActionButton label="Take Attendance" icon={ClipboardCheck} onClick={() => onNavigate('attendance')} />
@@ -539,16 +568,18 @@ function QuickStatCard({ label, value, icon: Icon, color, trend, suffix }: any) 
 
 function QuickActionButton({ label, icon: Icon, onClick }: { label: string; icon: any; onClick: () => void }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all group"
+      whileHover={{ x: 4 }}
+      whileTap={{ scale: 0.98 }}
+      className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-200 transition-all group"
     >
-      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+      <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
         <Icon className="w-5 h-5 text-white" />
       </div>
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
-      <ChevronRight className="w-4 h-4 text-slate-400 ml-auto group-hover:text-slate-700 transition-colors" />
-    </button>
+      <span className="text-sm font-semibold text-slate-700 group-hover:text-blue-700 transition-colors">{label}</span>
+      <ChevronRight className="w-4 h-4 text-slate-400 ml-auto group-hover:text-blue-600 transition-colors" />
+    </motion.button>
   );
 }
 
@@ -578,30 +609,50 @@ function BatchesView({ batches, selectedBatch, onSelectBatch }: { batches: any[]
         ))}
       </div>
 
-      {batch && (
-        <div className="grid grid-cols-4 gap-4">
+{batch && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Batch Stats */}
-          <div className="space-y-3">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <p className="text-xs text-slate-500 mb-1">Total Students</p>
+          <div className="space-y-4">
+            <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-slate-500">Total Students</span>
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <Users2 className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
               <p className="text-3xl font-bold text-slate-900">{batch.students}</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <p className="text-xs text-slate-500 mb-1">Avg Attendance</p>
+            </motion.div>
+            <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-slate-500">Avg Attendance</span>
+                <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+                  <UserCheck className="w-5 h-5 text-green-600" />
+                </div>
+              </div>
               <p className="text-3xl font-bold text-green-600">{batch.attendance}%</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <p className="text-xs text-slate-500 mb-1">Pending Assignments</p>
-              <p className="text-3xl font-bold text-amber-600">{batch.pendingAssignments}</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <p className="text-xs text-slate-500 mb-1">Avg Marks</p>
-              <p className="text-3xl font-bold text-blue-600">{batch.avgMarks}%</p>
-            </div>
+            </motion.div>
+            <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-slate-500">Given Assignments</span>
+                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-amber-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-amber-600">{ASSIGNMENTS.filter(a => a.batch === batch.name).length}</p>
+            </motion.div>
+            <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-slate-500">Avg Marks</span>
+                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+                  <Award className="w-5 h-5 text-purple-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-purple-600">{batch.avgMarks}%</p>
+            </motion.div>
           </div>
 
           {/* Subjects */}
-          <div className="col-span-3 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900 mb-4">Subjects & Classes</h3>
             <div className="space-y-3">
               {batch.subjects.map((subject: string) => (
@@ -633,26 +684,73 @@ function TimetableView() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-slate-900">Weekly Timetable</h2>
-      <div className="grid grid-cols-5 gap-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-slate-900">Weekly Timetable</h2>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-xs font-medium text-green-700">Today: {currentDay}</span>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-5 gap-4">
         {DAY_NAMES.slice(0, 5).map((day, idx) => (
-          <div key={day} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className={cn("py-3 text-center text-xs font-semibold", day === currentDay ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-700")}>
+          <motion.div 
+            key={day} 
+            variants={itemVariants}
+            className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className={cn(
+              "py-3.5 text-center text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2",
+              day.toLowerCase() === currentDay.toLowerCase() 
+                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/25" 
+                : "bg-slate-50 text-slate-700"
+            )}>
+              {day.toLowerCase() === currentDay.toLowerCase() && <CalendarDays className="w-3.5 h-3.5" />}
               {day}
             </div>
-            <div className="p-2 space-y-2 min-h-[300px]">
-              {TIMETABLE[days[idx] as keyof typeof TIMETABLE]?.map((cls, i) => (
-                <div key={i} className="p-2.5 bg-slate-50/80 rounded-lg border border-slate-100 hover:shadow-sm transition-shadow">
-                  <div className={cn("w-1 h-full absolute left-0 top-0 rounded-l-lg", cls.type === 'Lecture' ? "bg-blue-600" : "bg-slate-300")} />
-                  <div className="pl-2">
-                    <p className="text-xs font-semibold text-slate-900 truncate">{cls.subject}</p>
-                    <p className="text-[10px] text-slate-500">{cls.time.split('-')[0]}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{cls.batch} {cls.group && `(${cls.group})`}</p>
-                  </div>
+            <div className="p-3 space-y-2 min-h-[280px]">
+              {TIMETABLE[days[idx] as keyof typeof TIMETABLE]?.length === 0 ? (
+                <div className="flex items-center justify-center h-24 text-xs text-slate-400">
+                  No classes
                 </div>
-              ))}
+              ) : (
+                TIMETABLE[days[idx] as keyof typeof TIMETABLE]?.map((cls, i) => (
+                  <motion.div 
+                    key={i} 
+                    whileHover={{ scale: 1.02 }}
+                    className={cn(
+                      "p-3 rounded-xl border transition-all cursor-pointer group relative overflow-hidden",
+                      cls.type === 'Lecture' 
+                        ? "bg-gradient-to-r from-blue-50 to-blue-100/50 border-blue-100 hover:border-blue-300" 
+                        : "bg-gradient-to-r from-slate-50 to-slate-100/50 border-slate-200 hover:border-slate-300"
+                    )}
+                  >
+                    <div className={cn(
+                      "absolute left-0 top-0 bottom-0 w-1 rounded-l-xl",
+                      cls.type === 'Lecture' ? "bg-blue-600" : "bg-slate-400"
+                    )} />
+                    <div className="pl-2">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className={cn(
+                          "text-[9px] font-bold px-1.5 py-0.5 rounded",
+                          cls.type === 'Lecture' ? "bg-blue-600 text-white" : "bg-slate-400 text-white"
+                        )}>
+                          {cls.type}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors">{cls.subject}</p>
+                      <p className="text-[10px] text-blue-600 font-medium mt-1">{cls.time}</p>
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <span className="text-[10px] text-slate-500">{cls.batch}</span>
+                        {cls.group && <span className="text-[10px] text-slate-400">({cls.group})</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{cls.room}</p>
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
@@ -660,8 +758,8 @@ function TimetableView() {
 }
 
 // ==================== TASKBOARD VIEW ====================
-function TaskboardView({ type, setType, filter, setFilter }: { type: 'academic' | 'admin'; setType: (type: 'academic' | 'admin') => void; filter: 'all' | 'urgent' | 'thisweek'; setFilter: (filter: 'all' | 'urgent' | 'thisweek') => void }) {
-  const allTasks = type === 'academic' ? ACADEMIC_TASKS : ADMIN_TASKS;
+function TaskboardView({ filter, setFilter, onAddTask }: { filter: 'all' | 'urgent' | 'thisweek'; setFilter: (filter: 'all' | 'urgent' | 'thisweek') => void; onAddTask?: () => void }) {
+  const allTasks = ACADEMIC_TASKS;
   
   const getFilteredTasks = (tasks: any[]) => {
     if (filter === 'urgent') return tasks.filter(t => t.priority === 'HIGH' || t.priority === 'CRITICAL');
@@ -686,18 +784,14 @@ function TaskboardView({ type, setType, filter, setFilter }: { type: 'academic' 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-900">Taskboard</h2>
         <div className="flex gap-2">
-          <button
-            onClick={() => setType('academic')}
-            className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", type === 'academic' ? "bg-blue-600 text-white" : "bg-white text-slate-600 border border-slate-200")}
-          >
-            Academic
-          </button>
-          <button
-            onClick={() => setType('admin')}
-            className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", type === 'admin' ? "bg-blue-600 text-white" : "bg-white text-slate-600 border border-slate-200")}
-          >
-            Admin
-          </button>
+          {onAddTask && (
+            <button 
+              onClick={onAddTask}
+              className="flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-medium hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20"
+            >
+              <Plus className="w-4 h-4" /> Add Task
+            </button>
+          )}
         </div>
       </div>
 
@@ -733,11 +827,8 @@ function TaskboardView({ type, setType, filter, setFilter }: { type: 'academic' 
                   </div>
                   <h4 className="text-xs font-semibold text-slate-900 mb-1.5">{task.title}</h4>
                   <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                    {type === 'academic' ? (
-                      <><span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{task.subject}</span><span>{task.batch}</span></>
-                    ) : (
-                      <><span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">{task.type}</span><span>From: {task.from}</span></>
-                    )}
+                    <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">{task.subject}</span>
+                    <span>{task.batch}</span>
                   </div>
                 </div>
               ))}
@@ -844,7 +935,7 @@ function AttendanceView({ batches, selectedBatch, onSelectBatch, students, atten
 }
 
 // ==================== ASSIGNMENTS VIEW ====================
-function AssignmentsView({ batches, assignments }: { batches: any[]; assignments: any[] }) {
+function AssignmentsView({ batches, assignments, onNewAssignment }: { batches: any[]; assignments: any[]; onNewAssignment?: () => void }) {
   const [selectedBatch, setSelectedBatch] = useState(batches[0]?.id || '');
 
   const filteredAssignments = assignments.filter(a => 
@@ -855,7 +946,10 @@ function AssignmentsView({ batches, assignments }: { batches: any[]; assignments
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-900">Assignments</h2>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+        <button 
+          onClick={onNewAssignment}
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+        >
           <Plus className="w-4 h-4" /> New Assignment
         </button>
       </div>
@@ -1005,53 +1099,94 @@ function MarksEntryView({ batches, selectedBatch, onSelectBatch, assignments, se
 }
 
 // ==================== ANALYTICS VIEW ====================
-function AnalyticsView({ batches, analytics }: { batches: any[]; analytics: any }) {
+function AnalyticsView({ batches, analytics, onNewAssignment }: { batches: any[]; analytics: any; onNewAssignment?: () => void }) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-slate-900">Analytics</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-slate-900">Analytics</h2>
+        {onNewAssignment && (
+          <button 
+            onClick={onNewAssignment}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+          >
+            <Plus className="w-4 h-4" /> New Assignment
+          </button>
+        )}
+      </div>
 
       {/* Risk Alerts */}
       {analytics.riskAlerts.length > 0 && (
         <div className="space-y-2">
           {analytics.riskAlerts.map((alert: any, i: number) => (
-            <div key={i} className={cn("flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium border",
-              alert.type === 'warning' ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200")}>
+            <motion.div 
+              key={i} 
+              variants={itemVariants}
+              className={cn("flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium border",
+                alert.type === 'warning' ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200")}
+            >
               <AlertCircle className="w-4 h-4" />
               {alert.message}
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* Teacher Stats */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-        <h3 className="text-base font-semibold text-slate-900 mb-4">Teaching Statistics</h3>
-        <div className="grid grid-cols-6 gap-3">
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-500 mb-1">Total Lectures</p>
-            <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.totalLectures}</p>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-500 mb-1">Total Labs</p>
-            <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.totalLabs}</p>
+          <p className="text-xs text-slate-500 mb-1">Total Lectures</p>
+          <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.totalLectures}</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
+              <Clipboard className="w-5 h-5 text-purple-600" />
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-500 mb-1">Avg Attendance</p>
-            <p className="text-2xl font-bold text-green-600">{analytics.teacherStats.avgAttendance}%</p>
+          <p className="text-xs text-slate-500 mb-1">Total Labs</p>
+          <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.totalLabs}</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+              <UserCheck className="w-5 h-5 text-green-600" />
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-500 mb-1">Assignments</p>
-            <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.assignmentsGiven}</p>
+          <p className="text-xs text-slate-500 mb-1">Avg Attendance</p>
+          <p className="text-2xl font-bold text-green-600">{analytics.teacherStats.avgAttendance}%</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+              <FileText className="w-5 h-5 text-amber-600" />
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-500 mb-1">Hours/Month</p>
-            <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.hoursThisMonth}h</p>
+          <p className="text-xs text-slate-500 mb-1">Assignments</p>
+          <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.assignmentsGiven}</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+              <Clock className="w-5 h-5 text-indigo-600" />
+            </div>
           </div>
-          <div className="p-4 bg-slate-50 rounded-xl">
-            <p className="text-xs text-slate-500 mb-1">Student Interaction</p>
-            <p className="text-2xl font-bold text-blue-600">{analytics.teacherStats.studentInteraction}</p>
+          <p className="text-xs text-slate-500 mb-1">Hours/Month</p>
+          <p className="text-2xl font-bold text-slate-900">{analytics.teacherStats.hoursThisMonth}h</p>
+        </motion.div>
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center">
+              <Users2 className="w-5 h-5 text-rose-600" />
+            </div>
           </div>
-        </div>
+          <p className="text-xs text-slate-500 mb-1">Student Interaction</p>
+          <p className="text-2xl font-bold text-blue-600">{analytics.teacherStats.studentInteraction}</p>
+        </motion.div>
       </div>
 
       {/* Batch Performance */}
@@ -1059,24 +1194,33 @@ function AnalyticsView({ batches, analytics }: { batches: any[]; analytics: any 
         <h3 className="text-base font-semibold text-slate-900 mb-4">Batch-wise Performance</h3>
         <div className="space-y-3">
           {analytics.batchPerformance.map((batch: any) => (
-            <div key={batch.name} className="p-4 bg-slate-50 rounded-xl">
+            <motion.div 
+              key={batch.name} 
+              variants={itemVariants}
+              className="p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+            >
               <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-slate-900">{batch.name}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                    {batch.name.split('-')[0].slice(0,2)}{batch.name.split('-')[1]?.slice(0,2) || ''}
+                  </div>
+                  <span className="font-medium text-slate-900">{batch.name}</span>
+                </div>
                 <div className="flex items-center gap-3">
                   <span className={cn("text-xs font-medium flex items-center gap-0.5", batch.trend > 0 ? "text-green-600" : "text-red-600")}>
                     {batch.trend > 0 ? <TrendingUp className="w-3 h-3" /> : null}{batch.trend > 0 ? '+' : ''}{batch.trend}%
                   </span>
-                  <span className="text-sm font-medium text-green-600">{batch.attendance}%</span>
+                  <span className="text-sm font-bold text-green-600">{batch.attendance}%</span>
                 </div>
               </div>
-              <div className="w-full bg-slate-200 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${batch.attendance}%` }} />
+              <div className="w-full bg-slate-200 rounded-full h-2.5">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full" style={{ width: `${batch.attendance}%` }} />
               </div>
-              <div className="flex gap-2 mt-2">
-                <span className="text-[10px] bg-white text-slate-600 px-2 py-1 rounded-lg border border-slate-200">Attendance: {batch.attendance}%</span>
-                <span className="text-[10px] bg-white text-slate-600 px-2 py-1 rounded-lg border border-slate-200">Avg Marks: {batch.avgMarks}%</span>
+              <div className="flex gap-2 mt-3">
+                <span className="text-[10px] bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 font-medium">Attendance: {batch.attendance}%</span>
+                <span className="text-[10px] bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 font-medium">Avg Marks: {batch.avgMarks}%</span>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -1140,22 +1284,287 @@ function DirectoryView({ faculty }: { faculty: any[] }) {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-slate-900">Faculty Directory</h2>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {faculty.map((f, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 text-center shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-              <span className="text-white font-bold text-lg">{f.avatar}</span>
+          <motion.div 
+            key={i} 
+            variants={itemVariants}
+            className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/20 group-hover:scale-105 transition-transform">
+                <span className="text-white font-bold text-lg">{f.avatar}</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{f.name}</h3>
+                <p className="text-xs text-slate-500 mb-1">{f.role}</p>
+                <p className="text-[10px] text-blue-600 font-medium">{f.specialization}</p>
+              </div>
             </div>
-            <h3 className="font-semibold text-slate-900">{f.name}</h3>
-            <p className="text-xs text-slate-500 mb-1">{f.role}</p>
-            <p className="text-[10px] text-blue-600 font-medium mb-2">{f.specialization}</p>
-            <div className="text-[10px] text-slate-400 space-y-0.5">
-              <p>{f.email}</p>
-              <p>{f.phone}</p>
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Mail className="w-3.5 h-3.5" />
+                <span className="truncate">{f.email}</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1.5">
+                <Phone className="w-3.5 h-3.5" />
+                <span>{f.phone}</span>
+              </div>
             </div>
-          </div>
+            <div className="mt-4 flex gap-2">
+              <button className="flex-1 py-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                <MessageSquare className="w-3.5 h-3.5 inline mr-1" /> Message
+              </button>
+              <button className="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                <User className="w-3.5 h-3.5 inline mr-1" /> Profile
+              </button>
+            </div>
+          </motion.div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ==================== NEW ASSIGNMENT MODAL ====================
+function NewAssignmentModal({ isOpen, onClose, batches }: { isOpen: boolean; onClose: () => void; batches: any[] }) {
+  const [title, setTitle] = useState('');
+  const [batch, setBatch] = useState(batches[0]?.id || '');
+  const [subject, setSubject] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [maxMarks, setMaxMarks] = useState(20);
+  const [description, setDescription] = useState('');
+
+  const selectedBatch = batches.find(b => b.id === batch);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+      >
+        <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-blue-700">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5" /> Create New Assignment
+            </h3>
+            <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Assignment Title</label>
+            <input 
+              type="text" 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter assignment title"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Batch</label>
+              <select 
+                value={batch}
+                onChange={(e) => setBatch(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+              >
+                {batches.map((b: any) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Subject</label>
+              <select 
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+              >
+                <option value="">Select Subject</option>
+                {selectedBatch?.subjects.map((s: string) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Due Date</label>
+              <input 
+                type="date" 
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Max Marks</label>
+              <input 
+                type="number" 
+                value={maxMarks}
+                onChange={(e) => setMaxMarks(Number(e.target.value))}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Description</label>
+            <textarea 
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter assignment description"
+              rows={3}
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => {
+              alert(`Assignment "${title}" created for ${selectedBatch?.name} - ${subject}`);
+              onClose();
+            }}
+            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+          >
+            Create Assignment
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ==================== ADD TASK MODAL ====================
+function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [title, setTitle] = useState('');
+  const [batch, setBatch] = useState('All');
+  const [subject, setSubject] = useState('');
+  const [priority, setPriority] = useState('MEDIUM');
+  const [deadline, setDeadline] = useState('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+      >
+        <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-amber-500 to-orange-500">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <ClipboardList className="w-5 h-5" /> Assign Task to Faculty
+            </h3>
+            <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Task Title</label>
+            <input 
+              type="text" 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter task title"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Batch</label>
+              <select 
+                value={batch}
+                onChange={(e) => setBatch(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+              >
+                <option value="All">All Batches</option>
+                <option value="CSE-AIML">CSE-AIML</option>
+                <option value="CSE">CSE</option>
+                <option value="IT">IT</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Subject</label>
+              <select 
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+              >
+                <option value="">Select Subject</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="Computer Networks">Computer Networks</option>
+                <option value="Computer Design">Computer Design</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Priority</label>
+              <select 
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+              >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="CRITICAL">Critical</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Deadline</label>
+              <input 
+                type="date" 
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+          <button 
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={() => {
+              alert(`Task "${title}" assigned successfully`);
+              onClose();
+            }}
+            className="px-5 py-2.5 bg-amber-600 text-white text-sm font-medium rounded-xl hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20"
+          >
+            Assign Task
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }
