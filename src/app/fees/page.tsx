@@ -101,7 +101,7 @@ export default function FeesPage() {
               <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-lg flex items-center justify-center shadow-md">
                 <Layers className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-gray-900 text-sm hidden sm:block">DWAOP</span>
+              <span className="font-bold text-gray-900 text-sm hidden sm:block">DeptWP</span>
             </button>
           </div>
 
@@ -406,7 +406,7 @@ export default function FeesPage() {
                     Cancel
                   </button>
                   <a 
-                    href="upi://pay?pa=college@upi&pn=DWAOP&am=59050"
+                    href="upi://pay?pa=college@upi&pn=DeptWP&am=59050"
                     className="flex-1 px-4 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-sm font-medium text-center hover:bg-[var(--color-primary-dark)]"
                   >
                     Open UPI

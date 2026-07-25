@@ -286,8 +286,8 @@ export class AuthService {
   private generateAccessToken(payload: JwtPayload): string {
     return jwt.sign(payload, config.jwt.secret as string, {
       expiresIn: config.jwt.expiresIn as any,
-      issuer: 'dwaop-platform',
-      audience: 'dwaop-users'
+      issuer: 'deptwp-platform',
+      audience: 'deptwp-users'
     });
   }
 
@@ -297,8 +297,8 @@ export class AuthService {
   private generateRefreshToken(payload: JwtPayload): string {
     return jwt.sign(payload, config.jwt.refreshSecret as string, {
       expiresIn: config.jwt.refreshExpiresIn as any,
-      issuer: 'dwaop-platform',
-      audience: 'dwaop-users'
+      issuer: 'deptwp-platform',
+      audience: 'deptwp-users'
     });
   }
 

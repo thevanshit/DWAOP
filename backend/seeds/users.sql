@@ -32,7 +32,7 @@ INSERT INTO users (
   updated_at
 ) VALUES (
   'a0000000-0000-0000-0000-000000000001',
-  'admin@dwaop.com',
+  'admin@campus.edu',
   '$2b$10$rOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQ', -- password: password123 (mock hash)
   'System',
   'Administrator',
@@ -59,7 +59,7 @@ INSERT INTO users (
   updated_at
 ) VALUES (
   'b0000000-0000-0000-0000-000000000001',
-  'teacher@dwaop.com',
+  'teacher@campus.edu',
   '$2b$10$rOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQ',
   'John',
   'Smith',
@@ -86,7 +86,7 @@ INSERT INTO users (
   updated_at
 ) VALUES (
   'c0000000-0000-0000-0000-000000000001',
-  'student@dwaop.com',
+  'student@campus.edu',
   '$2b$10$rOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQjQjQjQjOzJqQjQjQjQjQ',
   'Alice',
   'Johnson',

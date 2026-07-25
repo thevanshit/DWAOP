@@ -18,7 +18,7 @@ const DEFAULT_ACCOUNTS: UserAccount[] = [
 
 function getStoredUsers(): UserAccount[] {
   if (typeof window === 'undefined') return []
-  const stored = localStorage.getItem('dwaop_users')
+  const stored = localStorage.getItem('deptwp_users')
   return stored ? JSON.parse(stored) : []
 }
 
@@ -169,7 +169,7 @@ function LoginForm() {
     }
 
     existingUsers.push(newUser)
-    localStorage.setItem('dwaop_users', JSON.stringify(existingUsers))
+    localStorage.setItem('deptwp_users', JSON.stringify(existingUsers))
 
     localStorage.setItem('userRole', role)
     localStorage.setItem('userEmail', email)
@@ -229,12 +229,12 @@ function LoginForm() {
             ) : isLoginFlow ? (
               <>
                 <h1 className="text-xl font-semibold text-gray-900 mb-1">Access workspace</h1>
-                <p className="text-sm text-gray-500">Sign in to continue to DWAOP</p>
+                <p className="text-sm text-gray-500">Sign in to continue to DepartmentWP</p>
               </>
             ) : (
               <>
                 <h1 className="text-xl font-semibold text-gray-900 mb-1">Create account</h1>
-                <p className="text-sm text-gray-500">Register to join DWAOP</p>
+                <p className="text-sm text-gray-500">Register to join DepartmentWP</p>
               </>
             )}
           </div>
@@ -349,7 +349,7 @@ function LoginForm() {
                 </button>
 
                 <p className="text-center text-sm text-gray-500">
-                  New to DWAOP?{' '}
+                  New to DepartmentWP?{' '}
                   <button type="button" onClick={() => setIsRegisterMode(true)} className="text-[var(--color-primary)] hover:underline font-medium">
                     Create account
                   </button>
@@ -464,7 +464,7 @@ function LoginForm() {
         {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-2">
           <Shield className="w-3 h-3" />
-          Secure institutional access • DWAOP v2.0.5
+          Secure institutional access • DepartmentWP v2.0.5
         </p>
       </div>
     </div>

@@ -101,7 +101,7 @@ export default function SettingsPage() {
               <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-lg flex items-center justify-center shadow-md">
                 <Layers className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-gray-900 text-sm hidden sm:block">DWAOP</span>
+              <span className="font-bold text-gray-900 text-sm hidden sm:block">DeptWP</span>
             </button>
           </div>
 

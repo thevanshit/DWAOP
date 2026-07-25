@@ -1,4 +1,4 @@
--- DWAOP Platform Database Schema
+-- Department Workflow Platform Database Schema
 -- Department Workflow & Academic Operations Platform
 
 -- Drop all tables in the correct order (for development)

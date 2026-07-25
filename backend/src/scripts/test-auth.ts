@@ -7,7 +7,7 @@ async function testAuth() {
     try {
         console.log('Testing Login...');
         const loginResponse = await axios.post(`${API_URL}/auth/login`, {
-            email: 'admin@dwaop.com',
+            email: 'admin@campus.edu',
             password: 'password123'
         });
 

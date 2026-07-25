@@ -45,9 +45,9 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
     try {
       // Mock authentication for development
       const mockUsers = [
-        { email: 'student@dwaop.com', password: 'student123', role: 'student' },
-        { email: 'teacher@dwaop.com', password: 'teacher123', role: 'teacher' },
-        { email: 'admin@dwaop.com', password: 'admin123', role: 'admin' }
+        { email: 'student@campus.edu', password: 'student123', role: 'student' },
+        { email: 'teacher@campus.edu', password: 'teacher123', role: 'teacher' },
+        { email: 'admin@campus.edu', password: 'admin123', role: 'admin' }
       ]
       
       const user = mockUsers.find(u => u.email === email && u.password === password)

@@ -297,7 +297,7 @@ export default function StudentDashboard() {
             <Layers className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-base tracking-tight text-slate-900 leading-none">DWAOP</span>
+            <span className="font-bold text-base tracking-tight text-slate-900 leading-none">DeptWP</span>
             <span className="text-[9px] text-slate-400 -mt-0.5">Student Portal</span>
           </div>
         </div>
@@ -1793,7 +1793,7 @@ function FeesView() {
                   Cancel
                 </button>
                 <a 
-                  href="upi://pay?pa=college@upi&pn=DWAOP&am=59050"
+                  href="upi://pay?pa=college@upi&pn=DeptWP&am=59050"
                   className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium text-center hover:bg-blue-700"
                 >
                   Open UPI

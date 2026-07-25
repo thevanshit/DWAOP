@@ -147,7 +147,7 @@ export default function DashboardLayout({ children, role, roleLabel, navItems, t
               <div className="w-9 h-9 bg-gradient-to-br from-[var(--color-primary)] to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <Layers className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-lg text-gray-900 hidden sm:block">DWAOP</span>
+              <span className="font-bold text-lg text-gray-900 hidden sm:block">DeptWP</span>
             </button>
           </div>
 

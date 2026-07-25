@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import '../styles/globals.css'
 
 export const metadata: Metadata = {
-  title: 'DWAOP - Department Workflow & Academic Operations Platform',
+  title: 'Department Workflow Platform',
   description: 'A workflow-driven platform for managing academic operations',
 }
 

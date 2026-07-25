@@ -164,7 +164,7 @@ class Application {
     // API info endpoint
     this.app.get('/api', (req, res) => {
       res.json({
-        name: 'DWAOP Backend API',
+        name: 'DepartmentWP Backend API',
         description: 'Department Workflow & Academic Operations Platform',
         version: '1.0.0',
         endpoints: {
@@ -254,7 +254,7 @@ class Application {
 
       // Start server with WebSocket support
       this.server.listen(config.port, () => {
-        logger.info(`🚀 DWAOP Backend Server started on port ${config.port}`);
+        logger.info(`🚀 DepartmentWP Backend Server started on port ${config.port}`);
         logger.info(`📊 Environment: ${config.nodeEnv}`);
         logger.info(`🔗 API Base URL: http://localhost:${config.port}/api`);
         logger.info(`❤️  Health Check: http://localhost:${config.port}/health`);

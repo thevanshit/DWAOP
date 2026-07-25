@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import db from './index';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dwaop-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'deptwp-secret-key-change-in-production';
 const JWT_EXPIRES_IN = '24h';
 const REFRESH_TOKEN_EXPIRES_DAYS = 7;
 

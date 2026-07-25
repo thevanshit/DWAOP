@@ -3,7 +3,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'dwaop.db');
+const DB_PATH = path.join(process.cwd(), 'data', 'deptwp.db');
 const db = new Database(DB_PATH);
 
 db.pragma('journal_mode = WAL');
@@ -330,7 +330,7 @@ export function initializeDatabase() {
 }
 
 export function seedDatabase() {
-  const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@dwaop.com');
+  const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@campus.edu');
   
   if (adminExists) {
     console.log('Database already seeded');
@@ -346,7 +346,7 @@ export function seedDatabase() {
 
   const adminId = uuidv4();
   db.prepare(`INSERT INTO users (id, email, password_hash, first_name, last_name, role, department_id, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    adminId, 'admin@dwaop.com', passwordHash, 'System', 'Administrator', 'admin', deptId, 'SA'
+    adminId, 'admin@campus.edu', passwordHash, 'System', 'Administrator', 'admin', deptId, 'SA'
   );
 
   const hodId = uuidv4();

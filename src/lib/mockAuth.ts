@@ -14,7 +14,7 @@ interface MockUser {
 const mockUsers: MockUser[] = [
   {
     id: 'admin001',
-    email: 'admin@dwaop.com',
+    email: 'admin@campus.edu',
     password: 'admin123',
     firstName: 'System',
     lastName: 'Administrator',
@@ -23,7 +23,7 @@ const mockUsers: MockUser[] = [
   },
   {
     id: 'teacher001',
-    email: 'teacher@dwaop.com',
+    email: 'teacher@campus.edu',
     password: 'teacher123',
     firstName: 'John',
     lastName: 'Smith',
@@ -32,7 +32,7 @@ const mockUsers: MockUser[] = [
   },
   {
     id: 'student001',
-    email: 'student@dwaop.com',
+    email: 'student@campus.edu',
     password: 'student123',
     firstName: 'Alice',
     lastName: 'Johnson',

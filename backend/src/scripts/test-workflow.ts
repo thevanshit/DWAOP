@@ -9,7 +9,7 @@ async function testWorkflow() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                email: 'student@dwaop.com',
+                email: 'student@campus.edu',
                 password: 'password123'
             })
         });

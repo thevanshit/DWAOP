@@ -1,7 +1,7 @@
 {
-  "name": "dwaop-backend",
+  "name": "department-workflow-platform-backend",
   "version": "1.0.0",
-  "description": "DWAOP Backend - Department Workflow & Academic Operations Platform",
+  "description": "Department Workflow Platform - Backend API Server",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon -r tsconfig-paths/register src/index.ts",
@@ -21,7 +21,7 @@
     "department",
     "operations"
   ],
-  "author": "DWAOP Team",
+  "author": "Department Workflow Platform Team",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",

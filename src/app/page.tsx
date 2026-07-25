@@ -42,7 +42,7 @@ export default function HomePage() {
               <Layers className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg text-[var(--color-text-primary)] leading-tight">DWAOP</span>
+              <span className="font-bold text-lg text-[var(--color-text-primary)] leading-tight">DepartmentWP</span>
               <span className="text-[10px] text-[var(--color-text-muted)] -mt-0.5">Digital Operations</span>
             </div>
           </button>
@@ -460,7 +460,7 @@ export default function HomePage() {
               <div className="bg-[var(--color-primary-faint)] rounded-xl p-5 border border-[var(--color-primary-faint)]">
                 <h4 className="font-medium text-[var(--color-text-primary)] mb-2">Why Workflow Instead of Traditional Systems?</h4>
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                  Traditional academic systems treat data as static records. DWAOP treats every activity as a living process that evolves through defined states with clear ownership.
+                  Traditional academic systems treat data as static records. DepartmentWP treats every activity as a living process that evolves through defined states with clear ownership.
                 </p>
               </div>
 
@@ -514,7 +514,7 @@ export default function HomePage() {
             </p>
 
             <div className="bg-white rounded-xl border border-[var(--color-border)] p-6 mt-8">
-              <p className="text-[var(--color-text-primary)] font-medium mb-4">DWAOP is not just another LMS or ERP. It is a:</p>
+              <p className="text-[var(--color-text-primary)] font-medium mb-4">DepartmentWP is not just another LMS or ERP. It is a:</p>
               <div className="grid md:grid-cols-2 gap-4 text-left">
                 <VisionPoint icon={<Workflow className="w-4 h-4" />} text="Workflow-first governance framework" />
                 <VisionPoint icon={<Users className="w-4 h-4" />} text="Role-connecting platform" />
@@ -539,7 +539,7 @@ export default function HomePage() {
                 <Layers className="w-4 h-4 text-white" />
               </div>
               <div>
-                <span className="text-sm font-semibold text-[var(--color-text-primary)]">DWAOP</span>
+                <span className="text-sm font-semibold text-[var(--color-text-primary)]">DepartmentWP</span>
                 <p className="text-[10px] text-[var(--color-text-muted)]">Department Workflow & Academic Operations Platform</p>
               </div>
             </div>
@@ -552,7 +552,7 @@ export default function HomePage() {
               </div>
               
               <a 
-                href="https://github.com/thevanshit/dwaop-platform" 
+                href="https://github.com/thevanshit/department-workflow-platform" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
