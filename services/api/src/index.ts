@@ -12,9 +12,7 @@ import { RBACService } from '@/core/rbac/service';
 import { AuthService } from '@/core/auth/service';
 import { createAuthMiddleware } from '@/middleware/auth';
 import { NotificationService } from '@/services/notification';
-import { createAuthRoutes } from '@/routes/auth';
-import { createWorkflowRoutes } from '@/routes/workflows';
-import { createDashboardRoutes } from '@/routes/dashboard';
+import { registerModules, ModuleDependencies } from '@/modules';
 
 class Application {
   public app: express.Application;
@@ -138,28 +136,27 @@ class Application {
       legacyHeaders: false,
     });
     this.app.use('/api', limiter);
+  }
+
+  /**
+   * Initialize routes using modular architecture
+   */
+  private initializeRoutes(): void {
+    const authMiddleware = createAuthMiddleware(this.authService);
+
+    const moduleDeps: ModuleDependencies = {
+      authService: this.authService,
+      rbacService: this.rbacService,
+      workflowEngine: this.workflowEngine,
+      notificationService: this.notificationService,
+      authMiddleware,
+    };
+
+    // Register all feature modules
+    registerModules(this.app, moduleDeps);
 
     // Health check endpoint
-    this.app.get('/health', async (req, res) => {
-      try {
-        const dbHealth = await this.database.healthCheck();
-        const uptime = process.uptime();
-
-        res.status(200).json({
-          status: 'healthy',
-          uptime: uptime,
-          database: dbHealth ? 'connected' : 'disconnected',
-          timestamp: new Date().toISOString(),
-          version: process.env.npm_package_version || '1.0.0',
-        });
-      } catch (error) {
-        res.status(503).json({
-          status: 'unhealthy',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date().toISOString(),
-        });
-      }
-    });
+    this.app.get('/health', this.healthCheck.bind(this));
 
     // API info endpoint
     this.app.get('/api', (req, res) => {
@@ -167,42 +164,32 @@ class Application {
         name: 'DepartmentWP Backend API',
         description: 'Department Workflow & Academic Operations Platform',
         version: '1.0.0',
-        endpoints: {
-          auth: '/api/auth',
-          workflows: '/api/workflows',
-          dashboard: '/api/dashboard',
-          users: '/api/users',
-        },
-        documentation: '/api/docs',
       });
     });
   }
 
   /**
-   * Initialize routes
+   * Health check handler
    */
-  private initializeRoutes(): void {
-    // Create auth middleware
-    const authMiddleware = createAuthMiddleware(this.authService);
+  private async healthCheck(req: express.Request, res: express.Response): Promise<void> {
+    try {
+      const dbHealth = await this.database.healthCheck();
+      const uptime = process.uptime();
 
-    // API routes
-    const apiRouter = express.Router();
-
-    // Authentication routes
-    apiRouter.use('/auth', createAuthRoutes(this.authService));
-
-    // Workflow routes (protected)
-    apiRouter.use('/workflows', authMiddleware.authenticate, createWorkflowRoutes(this.workflowEngine));
-
-    // Dashboard routes (protected)
-    apiRouter.use('/dashboard', authMiddleware.authenticate, createDashboardRoutes(this.workflowEngine));
-
-    // Temporary routes for testing
-    apiRouter.get('/test', (req, res) => {
-      res.json({ message: 'API is working!' });
-    });
-
-    this.app.use('/api', apiRouter);
+      res.status(200).json({
+        status: 'healthy',
+        uptime,
+        database: dbHealth ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString(),
+        version: process.env.npm_package_version || '1.0.0',
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   /**
