@@ -52,3 +52,8 @@ next-env.d.ts
 
 # Uploads
 uploads/
+
+# Package manager locks (managed by root)
+apps/*/package-lock.json
+services/*/package-lock.json
+packages/*/package-lock.json

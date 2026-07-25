@@ -3,7 +3,9 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 
-const DB_PATH = path.join(process.cwd(), 'data', 'deptwp.db');
+// Database path — configurable via DATA_DIR env or defaults to apps/web/data/
+const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+const DB_PATH = path.join(DATA_DIR, 'deptwp.db');
 const db = new Database(DB_PATH);
 
 db.pragma('journal_mode = WAL');

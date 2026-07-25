@@ -2,40 +2,22 @@
   "name": "department-workflow-platform",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@types/node": "^20.8.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "autoprefixer": "^10.4.16",
-    "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.6.2",
-    "clsx": "^2.1.1",
-    "date-fns": "^2.30.0",
-    "framer-motion": "^12.34.0",
-    "jsonwebtoken": "^9.0.3",
-    "lucide-react": "^0.292.0",
-    "next": "^14.0.0",
-    "postcss": "^8.4.31",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "recharts": "^2.10.3",
-    "tailwind-merge": "^3.4.1",
-    "tailwindcss": "^3.3.5",
-    "typescript": "^5.2.2",
-    "uuid": "^13.0.0"
+    "dev": "npm run dev --workspace=apps/web",
+    "dev:api": "npm run dev --workspace=services/api",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
+    "build": "npm run build --workspace=apps/web",
+    "build:api": "npm run build --workspace=services/api",
+    "build:all": "npm run build && npm run build:api",
+    "lint": "npm run lint --workspace=apps/web",
+    "test": "npm run test --workspace=services/api"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/uuid": "^10.0.0",
-    "eslint": "^8.52.0",
-    "eslint-config-next": "^14.0.0"
+    "concurrently": "^8.2.2"
   }
 }
