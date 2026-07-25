@@ -54,8 +54,13 @@ export function createStudentsModule(deps: ModuleDependencies): Module {
   // GET /api/students/:id/eligibility - Exam eligibility
   router.get('/:id/eligibility', getStudentEligibilityValidator, controller.getStudentEligibility);
 
-  // PUT /api/students/:id - Update profile
-  router.put('/:id', updateStudentValidator, controller.updateStudent);
+  // PUT /api/students/:id - Update profile (admin/faculty)
+  router.put(
+    '/:id',
+    authMiddleware.requirePermission('admin.user_manage'),
+    updateStudentValidator,
+    controller.updateStudent
+  );
 
   return {
     name: 'students',

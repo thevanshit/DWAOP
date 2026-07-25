@@ -37,7 +37,7 @@ export function createWorkflowsModule(deps: ModuleDependencies): Module {
   router.get('/:id', controller.getById);
 
   // POST /api/workflows/:id/transition - Transition workflow state
-  router.post('/:id/transition', transitionWorkflowValidator, controller.transition);
+  router.post('/:id/transition', deps.authMiddleware.requirePermission('workflow.transition'), transitionWorkflowValidator, controller.transition);
 
   // GET /api/workflows/:id/history - Get transition history
   router.get('/:id/history', controller.getHistory);

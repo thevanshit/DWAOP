@@ -21,14 +21,24 @@ export function createAttendanceModule(deps: ModuleDependencies): Module {
   // GET /api/attendance/sessions — List sessions with filters
   router.get('/sessions', validators.validateGetSessions, controller.getSessions(attendanceService));
 
-  // POST /api/attendance/sessions — Create a session
-  router.post('/sessions', validators.validateCreateSession, controller.createSession(attendanceService));
+  // POST /api/attendance/sessions — Create a session (teacher/faculty)
+  router.post(
+    '/sessions',
+    authMiddleware.requirePermission('attendance.open'),
+    validators.validateCreateSession,
+    controller.createSession(attendanceService)
+  );
 
   // GET /api/attendance/sessions/:id — Get session details with records
   router.get('/sessions/:id', validators.validateGetSessionById, controller.getSessionById(attendanceService));
 
-  // POST /api/attendance/records — Mark attendance for a session
-  router.post('/records', validators.validateMarkAttendance, controller.markAttendance(attendanceService));
+  // POST /api/attendance/records — Mark attendance for a session (teacher/faculty)
+  router.post(
+    '/records',
+    authMiddleware.requirePermission('attendance.mark'),
+    validators.validateMarkAttendance,
+    controller.markAttendance(attendanceService)
+  );
 
   // GET /api/attendance/batch/:batchId — Batch attendance summary
   router.get('/batch/:batchId', validators.validateGetBatchAttendance, controller.getBatchAttendance(attendanceService));

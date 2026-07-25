@@ -23,8 +23,13 @@ export function createUsersRouter(
   // GET /api/users/:id - Get user by ID
   router.get('/:id', controller.getUserById(usersService));
 
-  // PUT /api/users/:id - Update user profile
-  router.put('/:id', validators.updateUserValidator, controller.updateUser(usersService));
+  // PUT /api/users/:id - Update user profile (admin or self)
+  router.put(
+    '/:id',
+    authMiddleware.requireRole(['admin']),
+    validators.updateUserValidator,
+    controller.updateUser(usersService)
+  );
 
   return router;
 }

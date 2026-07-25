@@ -24,17 +24,37 @@ export function createMarksModule(deps: ModuleDependencies): Module {
   // GET /api/marks/subject/:subjectId — Get marks by subject
   router.get('/subject/:subjectId', validators.validateGetSubjectMarks, controller.getSubjectMarks(marksService));
 
-  // POST /api/marks/entry — Enter marks
-  router.post('/entry', validators.validateEnterMarks, controller.enterMarks(marksService));
+  // POST /api/marks/entry — Enter marks (teacher/faculty)
+  router.post(
+    '/entry',
+    authMiddleware.requirePermission('marks.submit'),
+    validators.validateEnterMarks,
+    controller.enterMarks(marksService)
+  );
 
-  // PUT /api/marks/:id/submit — Submit marks for review
-  router.put('/:id/submit', validators.validateSubmitMarks, controller.submitMarks(marksService));
+  // PUT /api/marks/:id/submit — Submit marks for review (teacher)
+  router.put(
+    '/:id/submit',
+    authMiddleware.requirePermission('marks.submit'),
+    validators.validateSubmitMarks,
+    controller.submitMarks(marksService)
+  );
 
-  // PUT /api/marks/:id/finalise — Finalise marks
-  router.put('/:id/finalise', validators.validateFinaliseMarks, controller.finaliseMarks(marksService));
+  // PUT /api/marks/:id/finalise — Finalise marks (hod/admin)
+  router.put(
+    '/:id/finalise',
+    authMiddleware.requirePermission('marks.finalise'),
+    validators.validateFinaliseMarks,
+    controller.finaliseMarks(marksService)
+  );
 
-  // PUT /api/marks/:id/lock — Lock marks (immutable)
-  router.put('/:id/lock', validators.validateLockMarks, controller.lockMarks(marksService));
+  // PUT /api/marks/:id/lock — Lock marks, immutable after lock (hod/admin)
+  router.put(
+    '/:id/lock',
+    authMiddleware.requirePermission('marks.lock'),
+    validators.validateLockMarks,
+    controller.lockMarks(marksService)
+  );
 
   return {
     name: 'marks',
