@@ -1,0 +1,14 @@
+'use client'
+
+import { ReactNode } from 'react'
+import { AuthProvider } from '@/lib/auth-context'
+
+export function AuthWrapper({ children }: { children: ReactNode }) {
+  return (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  )
+}
+
+export default AuthWrapper

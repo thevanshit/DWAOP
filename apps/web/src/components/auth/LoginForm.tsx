@@ -43,22 +43,36 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
     setLoading(true)
     
     try {
-      // Mock authentication for development
+      // Try API-based login first
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem('userRole', data.data.user.role)
+          localStorage.setItem('userEmail', email)
+          localStorage.setItem('isLoggedIn', 'true')
+          router.push(`/dashboard/${data.data.user.role}`)
+          return
+        }
+      } catch {}
+
+      // Fallback: client-side mock auth
       const mockUsers = [
-        { email: 'student@campus.edu', password: 'student123', role: 'student' },
-        { email: 'teacher@campus.edu', password: 'teacher123', role: 'teacher' },
-        { email: 'admin@campus.edu', password: 'admin123', role: 'admin' }
+        { email: 'student1@cse.edu.in', password: 'student123', role: 'student' },
+        { email: 'teacher@cse.edu.in', password: 'admin123', role: 'teacher' },
+        { email: 'admin@campus.edu', password: 'admin123', role: 'admin' },
       ]
       
       const user = mockUsers.find(u => u.email === email && u.password === password)
       
       if (user && user.role === role) {
-        // Store user info in localStorage
         localStorage.setItem('userRole', role)
         localStorage.setItem('userEmail', email)
         localStorage.setItem('isLoggedIn', 'true')
-        
-        // Redirect to dashboard
         router.push(`/dashboard/${role}`)
       } else {
         throw new Error('Invalid credentials or role mismatch')

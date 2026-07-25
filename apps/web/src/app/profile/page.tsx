@@ -1,62 +1,85 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/common/DashboardLayout'
 import {
-    User,
-    Mail,
-    Phone,
-    Calendar,
-    MapPin,
-    BookOpen,
-    Award,
-    Edit,
-    Download,
-    Home,
-    FileText,
-    TrendingUp,
-    ClipboardList,
-    GraduationCap,
-    Users,
-    Clock,
-    Shield,
-    CreditCard,
-    ArrowLeft,
-    ChevronRight
+    User, Mail, Phone, Calendar, MapPin, BookOpen, Award,
+    Edit, Download, Home, FileText, TrendingUp, ClipboardList,
+    GraduationCap, Users, Clock, Shield, CreditCard, ArrowLeft, Loader2,
 } from 'lucide-react'
-import { UserRole } from '@/types'
+import { useAuth } from '@/lib/auth-context'
+import { apiClient } from '@/lib/api-client'
 
 export default function ProfilePage() {
     const router = useRouter()
-    const userRole: UserRole = 'student'
+    const { user, isAuthenticated, loading: authLoading } = useAuth()
+    const [profileData, setProfileData] = useState<any>(null)
+    const [stats, setStats] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/login')
+            return
+        }
+
+        const fetchProfile = async () => {
+            try {
+                const [profileRes, statsRes] = await Promise.all([
+                    apiClient.get('/auth/me'),
+                    apiClient.get('/dashboard/stats'),
+                ])
+                if (profileRes.success) setProfileData(profileRes.data)
+                if (statsRes.success) setStats(statsRes.data)
+            } catch (err) {
+                console.error('Failed to load profile:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        if (isAuthenticated) fetchProfile()
+    }, [authLoading, isAuthenticated, router])
+
+    const userRole = user?.role || 'student'
 
     const navItems = [
-        { label: 'Overview', icon: <Home className="w-4 h-4" />, href: '/dashboard/student#overview' },
-        { label: 'Assignments', icon: <FileText className="w-4 h-4" />, href: '/dashboard/student#assignments' },
-        { label: 'Attendance', icon: <Calendar className="w-4 h-4" />, href: '/dashboard/student#attendance' },
-        { label: 'Marks', icon: <Award className="w-4 h-4" />, href: '/dashboard/student#marks' },
-        { label: 'Requests', icon: <ClipboardList className="w-4 h-4" />, href: '/dashboard/student#requests' },
-        { label: 'Track Report', icon: <TrendingUp className="w-4 h-4" />, href: '/dashboard/student#track' },
+        { label: 'Dashboard', icon: <Home className="w-4 h-4" />, href: `/dashboard/${userRole}` },
+        { label: 'Assignments', icon: <FileText className="w-4 h-4" />, href: `/dashboard/${userRole}#assignments` },
+        { label: 'Attendance', icon: <Calendar className="w-4 h-4" />, href: `/dashboard/${userRole}#attendance` },
+        { label: 'Marks', icon: <Award className="w-4 h-4" />, href: `/dashboard/${userRole}#marks` },
     ]
 
+    if (authLoading || loading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto" />
+                    <p className="text-slate-600 font-medium">Loading profile...</p>
+                </div>
+            </div>
+        )
+    }
+
+    // Build profile data from API with fallback
     const studentData = {
-        name: 'Vanshit Gaur',
-        rollNumber: '240010150100',
-        email: 'vanshit@gjust.edu.in',
-        semester: 4,
-        branch: 'Computer Science & Engineering',
+        name: profileData?.name || user?.firstName + ' ' + user?.lastName || 'Student',
+        rollNumber: profileData?.email?.split('@')[0]?.toUpperCase() || '240010150100',
+        email: profileData?.email || user?.email || 'student@campus.edu',
+        semester: profileData?.semester || 4,
+        branch: profileData?.departmentName || 'Computer Science & Engineering',
         section: 'A',
-        enrollmentNumber: 'GJUST/CSE/2021/XXX',
+        enrollmentNumber: `ENR/${profileData?.id?.slice(0, 8) || '2021/XXX'}`,
         batchYear: '2021-2025',
         currentCGPA: 8.4,
-        overallAttendance: 79,
+        overallAttendance: stats?.attendancePercentage ?? 79,
         dateOfBirth: '2003-01-15',
         gender: 'Male',
         bloodGroup: 'O+',
         contactNumber: '+91 98765 43210',
         emergencyContact: '+91 98765 43211',
-        alternateEmail: 'vanshit.personal@gmail.com',
+        alternateEmail: profileData?.email || 'student@campus.edu',
         parentContact: '+91 98765 43212',
         admissionDate: '2021-08-15',
         category: 'General',
@@ -67,13 +90,13 @@ export default function ProfilePage() {
         fatherName: 'Mr. Rajesh Gaur',
         motherName: 'Mrs. Sunita Gaur',
         permanentAddress: '123, Sector-15, Gurgaon, Haryana - 122001',
-        correspondenceAddress: 'Same as above'
+        correspondenceAddress: 'Same as above',
     }
 
     const academicStats = [
         { label: 'Current CGPA', value: studentData.currentCGPA.toString(), sub: 'Out of 10.0', icon: <Award className="w-5 h-5" />, color: 'bg-green-50 text-green-600', border: 'border-green-200' },
         { label: 'Attendance', value: `${studentData.overallAttendance}%`, sub: 'Overall', icon: <Clock className="w-5 h-5" />, color: 'bg-blue-50 text-blue-600', border: 'border-blue-200' },
-        { label: 'Semester', value: `Sem ${studentData.semester}`, sub: 'Section {studentData.section}', icon: <BookOpen className="w-5 h-5" />, color: 'bg-purple-50 text-purple-600', border: 'border-purple-200' },
+        { label: 'Semester', value: `Sem ${studentData.semester}`, sub: `Section ${studentData.section}`, icon: <BookOpen className="w-5 h-5" />, color: 'bg-purple-50 text-purple-600', border: 'border-purple-200' },
         { label: 'Credits', value: '96', sub: 'Earned', icon: <GraduationCap className="w-5 h-5" />, color: 'bg-amber-50 text-amber-600', border: 'border-amber-200' },
     ]
 
@@ -82,11 +105,11 @@ export default function ProfilePage() {
     }
 
     return (
-        <DashboardLayout role={userRole} roleLabel="Student" navItems={navItems}>
+        <DashboardLayout role={userRole as any} roleLabel={userRole.charAt(0).toUpperCase() + userRole.slice(1)} navItems={navItems}>
             <div className="space-y-6">
                 {/* Back Button */}
                 <button 
-                    onClick={() => router.push('/dashboard/student')}
+                    onClick={() => router.push(`/dashboard/${userRole}`)}
                     className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
@@ -100,12 +123,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Hero Section */}
-                <div className="
-                    bg-gradient-to-br from-white via-[var(--color-primary-faint)]/30 to-white 
-                    rounded-2xl border border-black/[0.04]
-                    shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                    overflow-hidden
-                ">
+                <div className="bg-gradient-to-br from-white via-[var(--color-primary-faint)]/30 to-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
                     <div className="h-24 bg-gradient-to-r from-[var(--color-primary)] via-blue-500 to-indigo-600"></div>
                     <div className="px-6 md:px-8 pb-8">
                         <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-12">
@@ -144,11 +162,7 @@ export default function ProfilePage() {
                 {/* Academic Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {academicStats.map((stat, idx) => (
-                        <div key={idx} className={`
-                            bg-white rounded-2xl border border-black/[0.04]
-                            shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                            p-5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                        `}>
+                        <div key={idx} className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] p-5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                             <div className="flex items-center justify-between mb-3">
                                 <span className="text-sm font-medium text-[var(--color-text-muted)]">{stat.label}</span>
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color}`}>
@@ -164,11 +178,7 @@ export default function ProfilePage() {
                 {/* Information Cards Grid */}
                 <div className="grid lg:grid-cols-2 gap-6">
                     {/* Personal Information */}
-                    <div className="
-                        bg-white rounded-2xl border border-black/[0.04]
-                        shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                    ">
+                    <div className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                         <div className="px-6 py-4 border-b border-black/[0.04] flex items-center gap-3">
                             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
                                 <User className="w-5 h-5" />
@@ -186,11 +196,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Contact Information */}
-                    <div className="
-                        bg-white rounded-2xl border border-black/[0.04]
-                        shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                    ">
+                    <div className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                         <div className="px-6 py-4 border-b border-black/[0.04] flex items-center gap-3">
                             <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
                                 <Phone className="w-5 h-5" />
@@ -207,11 +213,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Academic Information */}
-                    <div className="
-                        bg-white rounded-2xl border border-black/[0.04]
-                        shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                    ">
+                    <div className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                         <div className="px-6 py-4 border-b border-black/[0.04] flex items-center gap-3">
                             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
                                 <BookOpen className="w-5 h-5" />
@@ -229,11 +231,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Performance & Enrollment */}
-                    <div className="
-                        bg-white rounded-2xl border border-black/[0.04]
-                        shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                    ">
+                    <div className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                         <div className="px-6 py-4 border-b border-black/[0.04] flex items-center gap-3">
                             <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
                                 <Award className="w-5 h-5" />
@@ -250,11 +248,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Parent Details */}
-                    <div className="
-                        bg-white rounded-2xl border border-black/[0.04]
-                        shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                    ">
+                    <div className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                         <div className="px-6 py-4 border-b border-black/[0.04] flex items-center gap-3">
                             <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-600">
                                 <Users className="w-5 h-5" />
@@ -269,11 +263,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Address Information */}
-                    <div className="
-                        bg-white rounded-2xl border border-black/[0.04]
-                        shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)]
-                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200
-                    ">
+                    <div className="bg-white rounded-2xl border border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-all duration-200">
                         <div className="px-6 py-4 border-b border-black/[0.04] flex items-center gap-3">
                             <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
                                 <MapPin className="w-5 h-5" />

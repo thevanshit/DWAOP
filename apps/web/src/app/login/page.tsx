@@ -11,9 +11,9 @@ interface UserAccount {
 }
 
 const DEFAULT_ACCOUNTS: UserAccount[] = [
-  { email: 'student@gjust.edu.in', password: 'student123', role: 'student' },
-  { email: 'faculty@gjust.edu.in', password: 'faculty123', role: 'teacher' },
-  { email: 'admin@gjust.edu.in', password: 'admin123', role: 'admin' },
+  { email: 'student1@cse.edu.in', password: 'student123', role: 'student' },
+  { email: 'teacher@cse.edu.in', password: 'admin123', role: 'teacher' },
+  { email: 'admin@campus.edu', password: 'admin123', role: 'admin' },
 ]
 
 function getStoredUsers(): UserAccount[] {
@@ -66,17 +66,17 @@ function LoginForm() {
   }, [])
 
   useEffect(() => {
-    if (email.endsWith('@gjust.edu.in')) {
+    if (email.includes('@')) {
       const prefix = email.split('@')[0].toLowerCase()
       if (prefix.includes('student')) setRole('student')
-      else if (prefix.includes('faculty') || prefix.includes('teacher')) setRole('teacher')
+      else if (prefix.includes('teacher') || prefix.includes('faculty')) setRole('teacher')
       else if (prefix.includes('admin')) setRole('admin')
     }
   }, [email])
 
   const validateEmail = (email: string) => {
-    const gjustRegex = /^[a-zA-Z0-9._%+-]+@gjust\.edu\.in$/
-    return gjustRegex.test(email)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(edu\.in|edu)$/
+    return emailRegex.test(email)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -88,11 +88,6 @@ function LoginForm() {
       return
     }
 
-    if (!validateEmail(email)) {
-      setError('Please use your institutional email (@gjust.edu.in)')
-      return
-    }
-
     if (!password) {
       setError('Please enter your password')
       return
@@ -100,6 +95,25 @@ function LoginForm() {
 
     setIsSubmitting(true)
 
+    // Try API-based login first
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        localStorage.setItem('userRole', data.data.user.role)
+        localStorage.setItem('userEmail', email)
+        localStorage.setItem('isLoggedIn', 'true')
+        router.push(`/dashboard/${data.data.user.role}`)
+        return
+      }
+    } catch {}
+
+    // Fallback: client-side mock auth
     await new Promise(resolve => setTimeout(resolve, 800))
 
     const user = validateCredentials(email, password)
@@ -112,6 +126,7 @@ function LoginForm() {
 
     localStorage.setItem('userRole', user.role)
     localStorage.setItem('userEmail', email)
+    localStorage.setItem('isLoggedIn', 'true')
     router.push(`/dashboard/${user.role}`)
   }
 
@@ -130,7 +145,7 @@ function LoginForm() {
     }
 
     if (!validateEmail(email)) {
-      setError('Please use your institutional email (@gjust.edu.in)')
+      setError('Please use your institutional email (@campus.edu or @cse.edu.in)')
       return
     }
 
@@ -251,7 +266,7 @@ function LoginForm() {
                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                           type="email"
-                          placeholder="you@gjust.edu.in"
+                          placeholder="you@campus.edu"
                           value={resetEmail}
                           onChange={(e) => setResetEmail(e.target.value)}
                           className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-200"
@@ -304,7 +319,7 @@ function LoginForm() {
                     <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${emailFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
                     <input
                       type="email"
-                      placeholder="you@gjust.edu.in"
+                      placeholder="you@campus.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => setEmailFocused(true)}
@@ -392,7 +407,7 @@ function LoginForm() {
                     <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${emailFocused ? 'text-[var(--color-primary)]' : 'text-gray-400'}`} />
                     <input
                       type="email"
-                      placeholder="you@gjust.edu.in"
+                      placeholder="you@campus.edu"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => setEmailFocused(true)}

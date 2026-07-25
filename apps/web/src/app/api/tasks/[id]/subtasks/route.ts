@@ -81,7 +81,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const { status, title, assigneeId } = await request.json();
+    const { subtaskId, status, title, assigneeId } = await request.json();
+
+    if (!subtaskId) {
+      return NextResponse.json({ error: 'subtaskId is required' }, { status: 400 });
+    }
 
     const updates: string[] = [];
     const values: any[] = [];
@@ -101,10 +105,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
 
-    values.push(params.id);
+    values.push(subtaskId);
     db.prepare(`UPDATE subtasks SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
-    const subtask = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(params.id);
+    const subtask = db.prepare('SELECT * FROM subtasks WHERE id = ?').get(subtaskId);
 
     return NextResponse.json({ success: true, data: subtask });
   } catch (error: any) {
@@ -129,7 +133,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    db.prepare('DELETE FROM subtasks WHERE id = ?').run(params.id);
+    const { subtaskId } = await request.json();
+    if (!subtaskId) {
+      return NextResponse.json({ error: 'subtaskId is required' }, { status: 400 });
+    }
+
+    db.prepare('DELETE FROM subtasks WHERE id = ?').run(subtaskId);
 
     return NextResponse.json({ success: true, message: 'Subtask deleted' });
   } catch (error: any) {

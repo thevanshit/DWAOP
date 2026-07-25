@@ -21,22 +21,25 @@ import {
   Shield,
   Moon,
   Globe,
-  Smartphone
+  Smartphone,
+  Loader2,
 } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 
 const NOTIFICATIONS = [
   { id: 1, title: 'Assignment Due Tomorrow', message: 'DBMS Assignment 3 due tomorrow', time: '2 hours ago', unread: true },
 ]
 
-const STUDENT_INFO = {
-  name: 'Vanshit Gaur',
-  rollNumber: '240010150100',
-  email: 'student@gjust.edu.in',
-  phone: '+91 9876543210'
-}
-
 export default function SettingsPage() {
   const router = useRouter()
+  const { user, isAuthenticated, loading: authLoading, logout } = useAuth()
+
+  const STUDENT_INFO = {
+    name: user?.firstName + ' ' + user?.lastName || 'Student',
+    rollNumber: user?.email?.split('@')[0]?.toUpperCase() || '240010150100',
+    email: user?.email || 'student@campus.edu',
+    phone: '+91 9876543210'
+  }
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -53,6 +56,13 @@ export default function SettingsPage() {
   
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length
 
+  // Auth guard
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [authLoading, isAuthenticated, router])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -66,10 +76,8 @@ export default function SettingsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem('userRole')
-    localStorage.removeItem('userEmail')
-    router.push('/')
+  const handleLogout = async () => {
+    await logout()
   }
 
   const getInitials = (name: string) => {

@@ -326,6 +326,87 @@ export function initializeDatabase() {
       expires_at TEXT NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- Fee Records table
+    CREATE TABLE IF NOT EXISTS fee_records (
+      id TEXT PRIMARY KEY,
+      student_id TEXT REFERENCES users(id),
+      semester TEXT NOT NULL,
+      academic_year TEXT NOT NULL,
+      tuition REAL DEFAULT 0,
+      hostel_fee REAL DEFAULT 0,
+      library_fee REAL DEFAULT 0,
+      exam_fee REAL DEFAULT 0,
+      total REAL DEFAULT 0,
+      status TEXT DEFAULT 'pending' CHECK(status IN ('paid', 'pending')),
+      due_date TEXT,
+      paid_date TEXT,
+      ref TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Transactions table
+    CREATE TABLE IF NOT EXISTS transactions (
+      id TEXT PRIMARY KEY,
+      student_id TEXT REFERENCES users(id),
+      amount REAL NOT NULL,
+      method TEXT NOT NULL,
+      reference TEXT,
+      semester TEXT,
+      transaction_date TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Hostel Allocations table
+    CREATE TABLE IF NOT EXISTS hostel_allocations (
+      id TEXT PRIMARY KEY,
+      student_id TEXT REFERENCES users(id),
+      hostel_name TEXT NOT NULL,
+      block TEXT,
+      room_number TEXT,
+      floor TEXT,
+      bed_type TEXT,
+      mess_type TEXT,
+      warden_name TEXT,
+      warden_contact TEXT,
+      year TEXT,
+      semester TEXT,
+      status TEXT DEFAULT 'current' CHECK(status IN ('current', 'previous')),
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Sports Events table
+    CREATE TABLE IF NOT EXISTS sports_events (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      sport TEXT NOT NULL,
+      event_date TEXT NOT NULL,
+      venue TEXT,
+      registration_deadline TEXT,
+      fee REAL DEFAULT 0,
+      event_type TEXT DEFAULT 'Tournament',
+      max_teams INTEGER,
+      max_participants INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Event Registrations table
+    CREATE TABLE IF NOT EXISTS event_registrations (
+      id TEXT PRIMARY KEY,
+      event_id TEXT REFERENCES sports_events(id),
+      student_id TEXT REFERENCES users(id),
+      registered_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Sports Achievements table
+    CREATE TABLE IF NOT EXISTS sports_achievements (
+      id TEXT PRIMARY KEY,
+      student_id TEXT REFERENCES users(id),
+      event_name TEXT NOT NULL,
+      sport TEXT NOT NULL,
+      position TEXT NOT NULL,
+      achievement_date TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   console.log('Database schema initialized');
@@ -407,6 +488,76 @@ export function seedDatabase() {
   }
 
   db.prepare(`UPDATE departments SET hod_id = ? WHERE id = ?`).run(hodId, deptId);
+
+  // Seed fee records for each student
+  const feeSemesters = [
+    { semester: 'Semester 1', year: '2024-25', tuition: 42000, hostelFee: 13550, libraryFee: 2000, examFee: 1500, status: 'paid' as const, paidDate: '2024-07-20', ref: 'TXN/2024/001', dueDate: '2024-07-15' },
+    { semester: 'Semester 2', year: '2024-25', tuition: 42000, hostelFee: 13550, libraryFee: 2000, examFee: 1500, status: 'paid' as const, paidDate: '2024-12-15', ref: 'TXN/2024/002', dueDate: '2024-12-10' },
+    { semester: 'Semester 3', year: '2025-26', tuition: 42000, hostelFee: 13550, libraryFee: 2000, examFee: 1500, status: 'paid' as const, paidDate: '2025-07-18', ref: 'TXN/2025/001', dueDate: '2025-07-15' },
+    { semester: 'Semester 4', year: '2025-26', tuition: 42000, hostelFee: 13550, libraryFee: 2000, examFee: 1500, status: 'pending' as const, paidDate: '', ref: '', dueDate: '2026-02-28' },
+  ];
+
+  studentIds.forEach(sid => {
+    feeSemesters.forEach(fs => {
+      const total = fs.tuition + fs.hostelFee + fs.libraryFee + fs.examFee;
+      db.prepare(`
+        INSERT INTO fee_records (id, student_id, semester, academic_year, tuition, hostel_fee, library_fee, exam_fee, total, status, due_date, paid_date, ref)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(uuidv4(), sid, fs.semester, fs.year, fs.tuition, fs.hostelFee, fs.libraryFee, fs.examFee, total, fs.status, fs.dueDate, fs.paidDate || null, fs.ref || null);
+
+      if (fs.status === 'paid') {
+        db.prepare(`
+          INSERT INTO transactions (id, student_id, amount, method, reference, semester)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `).run(uuidv4(), sid, total, 'Online Transfer', fs.ref, fs.semester);
+      }
+    });
+  });
+
+  // Seed hostel allocations for student1
+  const hostelId = uuidv4();
+  db.prepare(`
+    INSERT INTO hostel_allocations (id, student_id, hostel_name, block, room_number, floor, bed_type, mess_type, warden_name, warden_contact, year, semester, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(hostelId, studentIds[0], 'Vivekanand Hostel', 'BH4 (Boys Hostel 4)', '2A Wing, 318', '3rd Floor', '4 Sharing', 'Vegetarian', 'Dr. O.P. Sangwan', '+91 1800 123 4567', '2025-26', 'Semester 4', 'current');
+
+  db.prepare(`
+    INSERT INTO hostel_allocations (id, student_id, hostel_name, block, room_number, floor, bed_type, mess_type, warden_name, warden_contact, year, semester, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(uuidv4(), studentIds[0], 'Vivekanand Hostel', 'BH4', '215', '2nd Floor', '4 Sharing', 'Vegetarian', 'Dr. O.P. Sangwan', '+91 1800 123 4567', '2025-26', 'Semester 3', 'previous');
+
+  // Seed sports events
+  const events = [
+    { name: 'Inter-College Basketball Tournament', sport: 'Basketball', date: '2026-02-25', venue: 'Main Court', deadline: '2026-02-20', fee: 500, type: 'Tournament', teams: 8 },
+    { name: 'Annual Badminton Championship', sport: 'Badminton', date: '2026-03-01', venue: 'Sports Complex', deadline: '2026-02-25', fee: 300, type: 'Championship', participants: 64 },
+    { name: 'Cricket League 2026', sport: 'Cricket', date: '2026-03-05', venue: 'Cricket Ground', deadline: '2026-02-28', fee: 1000, type: 'League', teams: 12 },
+  ];
+
+  const eventIds: string[] = [];
+  events.forEach(ev => {
+    const eid = uuidv4();
+    db.prepare(`
+      INSERT INTO sports_events (id, name, sport, event_date, venue, registration_deadline, fee, event_type, max_teams, max_participants)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(eid, ev.name, ev.sport, ev.date, ev.venue, ev.deadline, ev.fee, ev.type, ev.teams || null, ev.participants || null);
+    eventIds.push(eid);
+  });
+
+  // Register student1 for first event
+  db.prepare(`
+    INSERT INTO event_registrations (id, event_id, student_id) VALUES (?, ?, ?)
+  `).run(uuidv4(), eventIds[0], studentIds[0]);
+
+  // Seed sports achievements for student1
+  db.prepare(`
+    INSERT INTO sports_achievements (id, student_id, event_name, sport, position, achievement_date)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(uuidv4(), studentIds[0], 'Inter-College Badminton 2025', 'Badminton', 'Winner', '2025-11-15');
+
+  db.prepare(`
+    INSERT INTO sports_achievements (id, student_id, event_name, sport, position, achievement_date)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(uuidv4(), studentIds[0], 'Annual Sports Meet', 'Table Tennis', 'Runner-up', '2025-09-20');
 
   console.log('Database seeded with sample data');
 }
