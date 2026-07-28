@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
 // Load environment variables
-dotenv.config();
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 export interface Config {
   port: number;
@@ -73,10 +75,10 @@ export const config: Config = {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432', 10),
     name: process.env.DB_NAME || 'deptwp_platform',
-    database: process.env.DB_DATABASE || process.env.DB_NAME || 'deptwp_platform',
+    database: process.env.DB_NAME || 'deptwp_platform',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
-    ssl: process.env.NODE_ENV === 'production',
+    ssl: process.env.DB_SSL === 'true',
     max: parseInt(process.env.DB_MAX_CONNECTIONS || '20', 10),
     idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
     connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT || '2000', 10),
@@ -90,10 +92,10 @@ export const config: Config = {
   },
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'your_super_secret_jwt_key_here',
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'your_refresh_token_secret_here',
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+    secret: process.env.JWT_SECRET || (() => { throw new Error('JWT_SECRET environment variable is required'); })(),
+    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    refreshSecret: process.env.JWT_REFRESH_SECRET || (() => { throw new Error('JWT_REFRESH_SECRET environment variable is required'); })(),
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
 
   email: {
@@ -138,20 +140,13 @@ export const config: Config = {
   },
 };
 
-// Validation
-const requiredEnvVars = [
-  'JWT_SECRET',
-  'JWT_REFRESH_SECRET',
-];
+// Warn about optional production environment variables
+const isProduction = config.nodeEnv === 'production';
+const prodRequiredVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
+const missingProdVars = prodRequiredVars.filter(v => !process.env[v]);
 
-if (config.nodeEnv === 'production') {
-  requiredEnvVars.push('DB_HOST', 'DB_NAME', 'DB_USER');
-}
-
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+if (isProduction && missingProdVars.length > 0) {
+  throw new Error(`Missing required environment variables for production: ${missingProdVars.join(', ')}`);
 }
 
 export default config;

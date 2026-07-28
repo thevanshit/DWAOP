@@ -2,22 +2,23 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { UserRole } from '@/types'
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react'
-import apiClient from '@/lib/api-client'
+import { useAuth } from '@/lib/auth-context'
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 
 interface LoginFormProps {
-  role: UserRole
+  role: string
   roleLabel: string
   roleIcon: React.ReactNode
 }
 
 export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps) {
   const router = useRouter()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const getGradientColor = () => {
@@ -41,45 +42,13 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
     
     try {
-      // Try API-based login first
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          localStorage.setItem('userRole', data.data.user.role)
-          localStorage.setItem('userEmail', email)
-          localStorage.setItem('isLoggedIn', 'true')
-          router.push(`/dashboard/${data.data.user.role}`)
-          return
-        }
-      } catch {}
-
-      // Fallback: client-side mock auth
-      const mockUsers = [
-        { email: 'student1@cse.edu.in', password: 'student123', role: 'student' },
-        { email: 'teacher@cse.edu.in', password: 'admin123', role: 'teacher' },
-        { email: 'admin@campus.edu', password: 'admin123', role: 'admin' },
-      ]
-      
-      const user = mockUsers.find(u => u.email === email && u.password === password)
-      
-      if (user && user.role === role) {
-        localStorage.setItem('userRole', role)
-        localStorage.setItem('userEmail', email)
-        localStorage.setItem('isLoggedIn', 'true')
-        router.push(`/dashboard/${role}`)
-      } else {
-        throw new Error('Invalid credentials or role mismatch')
-      }
-    } catch (error) {
-      console.error('Login failed:', error)
-      alert('Login failed. Please check your credentials and try again.')
+      await login({ email, password })
+      router.push(`/dashboard/${role}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials and try again.')
     } finally {
       setLoading(false)
     }
@@ -172,19 +141,12 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
             </div>
           </div>
 
-          {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center cursor-pointer group">
-              <input 
-                type="checkbox" 
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer" 
-              />
-              <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Remember me</span>
-            </label>
-            <a href="#" className={`text-sm font-medium ${getTextColor()} hover:underline transition-all`}>
-              Forgot password?
-            </a>
-          </div>
+          {/* Error Message */}
+          {error && (
+            <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50/50 px-3 py-2 rounded-lg">
+              <span>{error}</span>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
@@ -194,7 +156,7 @@ export default function LoginForm({ role, roleLabel, roleIcon }: LoginFormProps)
           >
             {loading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <Loader2 className="w-5 h-5 animate-spin" />
                 <span>Logging in...</span>
               </>
             ) : (

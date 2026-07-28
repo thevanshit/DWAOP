@@ -3,8 +3,15 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { ViewBatch, ViewAssignment } from './TeacherDashboardProvider'
 
-export function AssignmentsView({ batches, assignments, onNewAssignment }: { batches: any[]; assignments: any[]; onNewAssignment?: () => void }) {
+interface AssignmentsViewProps {
+  batches: ViewBatch[]
+  assignments: ViewAssignment[]
+  onNewAssignment?: () => void
+}
+
+export function AssignmentsView({ batches, assignments, onNewAssignment }: AssignmentsViewProps) {
   const [selectedBatch, setSelectedBatch] = useState(batches[0]?.id || '')
 
   const filteredAssignments = assignments.filter(a => 
@@ -25,7 +32,7 @@ export function AssignmentsView({ batches, assignments, onNewAssignment }: { bat
 
       <div className="flex gap-2">
         <button onClick={() => setSelectedBatch('all')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", selectedBatch === 'all' ? "bg-blue-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
-        {batches.map((b: any) => (
+        {batches.map((b) => (
           <button key={b.id} onClick={() => setSelectedBatch(b.id)} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors", selectedBatch === b.id ? "bg-blue-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>{b.name}</button>
         ))}
       </div>
@@ -39,7 +46,7 @@ export function AssignmentsView({ batches, assignments, onNewAssignment }: { bat
                   <h3 className="font-medium text-slate-900">{a.title}</h3>
                   {a.isLate && <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">LATE</span>}
                 </div>
-                <p className="text-xs text-slate-500">{a.subject} • {a.batch}</p>
+                <p className="text-xs text-slate-500">{a.subject} &bull; {a.batch}</p>
               </div>
               <span className={cn("text-xs font-medium px-2.5 py-1.5 rounded-lg", a.isLate ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600")}>Due: {a.dueDate}</span>
             </div>
@@ -50,7 +57,7 @@ export function AssignmentsView({ batches, assignments, onNewAssignment }: { bat
                   <span className="font-medium text-slate-700">{a.submitted}/{a.total}</span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${(a.submitted / a.total) * 100}%` }} />
+                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${a.total > 0 ? (a.submitted / a.total) * 100 : 0}%` }} />
                 </div>
               </div>
               <span className="text-sm font-semibold text-slate-600">{a.maxMarks} marks</span>

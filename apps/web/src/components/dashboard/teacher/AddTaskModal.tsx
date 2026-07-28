@@ -3,13 +3,66 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ClipboardList, X } from 'lucide-react'
+import { apiClient } from '@/lib/api-client'
 
-export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+interface AddTaskModalProps {
+  isOpen: boolean
+  onClose: () => void
+  batches?: { id: string; name: string }[]
+  subjects?: string[]
+}
+
+export function AddTaskModal({ isOpen, onClose, batches = [], subjects = [] }: AddTaskModalProps) {
   const [title, setTitle] = useState('')
-  const [batch, setBatch] = useState('All')
+  const [batch, setBatch] = useState('')
   const [subject, setSubject] = useState('')
   const [priority, setPriority] = useState('MEDIUM')
   const [deadline, setDeadline] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  const validate = (): boolean => {
+    const errors: Record<string, string> = {}
+    if (!title.trim()) errors.title = 'Task title is required'
+    if (!deadline) errors.deadline = 'Deadline is required'
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleSubmit = async () => {
+    if (!validate()) return
+
+    setSubmitting(true)
+    setError(null)
+
+    try {
+      const response = await apiClient.post('/tasks', {
+        title: title.trim(),
+        category: subject || 'General',
+        priority,
+        dueDate: deadline,
+        batchName: batch || 'All',
+        status: 'created',
+      })
+
+      if (response.success) {
+        setTitle('')
+        setBatch('')
+        setSubject('')
+        setPriority('MEDIUM')
+        setDeadline('')
+        setFieldErrors({})
+        onClose()
+      } else {
+        setError(response.error || 'Failed to create task')
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Network error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -23,7 +76,7 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-amber-500 to-orange-500">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <ClipboardList className="w-5 h-5" /> Assign Task to Faculty
+              <ClipboardList className="w-5 h-5" /> Assign Task
             </h3>
             <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
               <X className="w-5 h-5 text-white" />
@@ -32,15 +85,22 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         </div>
         
         <div className="p-6 space-y-4">
+          {error && (
+            <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+              {error}
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1.5">Task Title</label>
+            <label className="block text-xs font-medium text-slate-600 mb-1.5">Task Title *</label>
             <input 
               type="text" 
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => { setTitle(e.target.value); setFieldErrors(prev => { const n = {...prev}; delete n.title; return n; }) }}
               placeholder="Enter task title"
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+              className={`w-full px-4 py-2.5 border ${fieldErrors.title ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20`}
             />
+            {fieldErrors.title && <p className="text-[10px] text-red-500 mt-0.5">{fieldErrors.title}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -49,12 +109,12 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <select 
                 value={batch}
                 onChange={(e) => setBatch(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20"
               >
-                <option value="All">All Batches</option>
-                <option value="CSE-AIML">CSE-AIML</option>
-                <option value="CSE">CSE</option>
-                <option value="IT">IT</option>
+                <option value="">All Batches</option>
+                {batches.map((b) => (
+                  <option key={b.id} value={b.name}>{b.name}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -62,12 +122,12 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <select 
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20"
               >
                 <option value="">Select Subject</option>
-                <option value="Operating Systems">Operating Systems</option>
-                <option value="Computer Networks">Computer Networks</option>
-                <option value="Computer Design">Computer Design</option>
+                {subjects.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -78,7 +138,7 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               <select 
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -87,13 +147,14 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Deadline</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">Deadline *</label>
               <input 
                 type="date" 
                 value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20 focus:border-amber-600"
+                onChange={(e) => { setDeadline(e.target.value); setFieldErrors(prev => { const n = {...prev}; delete n.deadline; return n; }) }}
+                className={`w-full px-4 py-2.5 border ${fieldErrors.deadline ? 'border-red-400' : 'border-slate-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/20`}
               />
+              {fieldErrors.deadline && <p className="text-[10px] text-red-500 mt-0.5">{fieldErrors.deadline}</p>}
             </div>
           </div>
         </div>
@@ -101,18 +162,17 @@ export function AddTaskModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
           <button 
             onClick={onClose}
+            disabled={submitting}
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
           >
             Cancel
           </button>
           <button 
-            onClick={() => {
-              alert(`Task "${title}" assigned successfully`)
-              onClose()
-            }}
-            className="px-5 py-2.5 bg-amber-600 text-white text-sm font-medium rounded-xl hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-5 py-2.5 bg-amber-600 text-white text-sm font-medium rounded-xl hover:bg-amber-700 transition-colors shadow-lg shadow-amber-600/20 disabled:opacity-50"
           >
-            Assign Task
+            {submitting ? 'Assigning...' : 'Assign Task'}
           </button>
         </div>
       </motion.div>

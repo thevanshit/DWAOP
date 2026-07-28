@@ -6,7 +6,7 @@ import {
   ClipboardCheck, FileText, Plus 
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { TODAY_CLASSES, SMART_STATUS } from './data'
+import { useTeacherDashboardContext } from './TeacherDashboardProvider'
 import { QuickActionButton } from './QuickActionButton'
 
 const itemVariants = {
@@ -21,23 +21,18 @@ export function DashboardView({
 }: { 
   onNavigate: (tab: TabType) => void 
 }) {
-  const todayClasses = TODAY_CLASSES
-  const analytics = {
-    classesToday: todayClasses.length,
-    totalBatches: 3,
-    pendingTasks: 8,
-    lecturesThisWeek: 18,
-    urgentTasks: 3,
-  }
+  const ctx = useTeacherDashboardContext()
+  const todayClasses = ctx.todayClasses
+  const user = ctx.user
 
   const currentHour = new Date().getHours()
   const greeting = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening'
 
   const quickStats = [
-    { label: 'Classes Today', value: analytics.classesToday, icon: CalendarDays, color: 'blue', trend: 'up' },
-    { label: 'Total Batches', value: analytics.totalBatches, icon: Users2, color: 'green', trend: 'up' },
-    { label: 'Pending Tasks', value: analytics.pendingTasks, icon: Clipboard, color: 'amber', trend: 'down' },
-    { label: 'This Week', value: analytics.lecturesThisWeek, icon: BookMarked, color: 'purple', trend: 'up', suffix: 'Lectures' },
+    { label: 'Classes Today', value: todayClasses.length, icon: CalendarDays, color: 'blue' as const },
+    { label: 'Total Batches', value: ctx.batches.length, icon: Users2, color: 'green' as const },
+    { label: 'Pending Tasks', value: ctx.academicTasks.todo.length + ctx.academicTasks.overdue.length, icon: Clipboard, color: 'amber' as const },
+    { label: 'This Week', value: 18, icon: BookMarked, color: 'purple' as const, suffix: 'Lectures' },
   ]
 
   return (
@@ -51,11 +46,11 @@ export function DashboardView({
           <div className="flex items-center gap-5">
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
-                {greeting}, <span className="text-blue-600">Dr. Vineet</span>!
+                {greeting}, <span className="text-blue-600">{user?.name?.split(' ')[0] || 'Faculty'}</span>!
               </h1>
               <div className="text-slate-500 mt-2 space-y-0.5">
-                <p className="text-sm">You have {analytics.classesToday} classes today • {analytics.totalBatches} batches</p>
-                <p className="text-sm">{analytics.pendingTasks} pending tasks • {analytics.urgentTasks} urgent</p>
+                <p className="text-sm">You have {todayClasses.length} classes today &bull; {ctx.batches.length} batches</p>
+                <p className="text-sm">{quickStats[2].value} pending tasks &bull; {ctx.academicTasks.overdue.length} urgent</p>
               </div>
             </div>
           </div>
@@ -64,7 +59,7 @@ export function DashboardView({
 
       {/* Smart Status Row */}
       <motion.div variants={itemVariants} className="flex flex-wrap gap-2.5">
-        {SMART_STATUS.map((status, i) => {
+        {ctx.smartStatus.map((status, i) => {
           const Icon = status.icon
           return (
             <motion.div
@@ -128,25 +123,29 @@ export function DashboardView({
             <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">Today</span>
           </div>
           <div className="space-y-2">
-            {todayClasses.map((cls, i) => (
-              <motion.div 
-                key={i} 
-                whileHover={{ x: 4 }}
-                className="flex items-center gap-3 p-3 bg-slate-50/80 rounded-xl hover:bg-blue-50/50 transition-colors cursor-pointer group"
-              >
-                <div className={cn("w-1 h-12 rounded-full", i === 0 ? "bg-blue-600" : cls.type === 'Lab' ? "bg-slate-400" : "bg-slate-300")} />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{cls.subject}</p>
-                  <p className="text-xs text-slate-500">{cls.batch} {cls.group && `(${cls.group})`} • {cls.room}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-medium text-slate-600">{cls.time}</p>
-                  <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded", cls.type === 'Lecture' ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-600")}>
-                    {cls.type}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+            {todayClasses.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">No classes scheduled today</p>
+            ) : (
+              todayClasses.map((cls, i) => (
+                <motion.div 
+                  key={i} 
+                  whileHover={{ x: 4 }}
+                  className="flex items-center gap-3 p-3 bg-slate-50/80 rounded-xl hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                >
+                  <div className={cn("w-1 h-12 rounded-full", i === 0 ? "bg-blue-600" : cls.type === 'Lab' ? "bg-slate-400" : "bg-slate-300")} />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{cls.subject}</p>
+                    <p className="text-xs text-slate-500">{cls.batch} {cls.group && `(${cls.group})`} &bull; {cls.room}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-medium text-slate-600">{cls.time}</p>
+                    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded", cls.type === 'Lecture' ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-600")}>
+                      {cls.type}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
 

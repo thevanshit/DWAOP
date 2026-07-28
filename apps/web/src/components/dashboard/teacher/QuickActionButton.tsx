@@ -3,7 +3,13 @@
 import { motion } from 'framer-motion'
 import { ChevronRight } from 'lucide-react'
 
-export function QuickActionButton({ label, icon: Icon, onClick }: { label: string; icon: any; onClick: () => void }) {
+interface QuickActionButtonProps {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  onClick: () => void
+}
+
+export function QuickActionButton({ label, icon: Icon, onClick }: QuickActionButtonProps) {
   return (
     <motion.button
       onClick={onClick}

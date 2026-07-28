@@ -98,12 +98,15 @@ class ApiClient {
     }
   }
 
+    // Token refresh lock to prevent concurrent refresh calls
+  private refreshPromise: Promise<boolean> | null = null
+
   // Main request method
   async request<T = any>(
     endpoint: string,
-    options: RequestOptions = {}
+    options: RequestOptions & { signal?: AbortSignal } = {}
   ): Promise<ApiResponse<T>> {
-    const { body, params, skipAuth, ...fetchOptions } = options
+    const { body, params, skipAuth, signal, ...fetchOptions } = options
 
     // Build URL with query params
     let url = `${this.config.baseUrl}${endpoint}`
@@ -139,6 +142,7 @@ class ApiClient {
       ...fetchOptions,
       headers,
       method: fetchOptions.method || (body ? 'POST' : 'GET'),
+      signal,
     }
 
     // Attach body
@@ -151,11 +155,23 @@ class ApiClient {
 
       // If 401, try to refresh token
       if (response.status === 401 && !skipAuth) {
-        const refreshed = await this.refreshAccessToken()
+        // Use a singleton promise to prevent concurrent refresh calls
+        if (!this.refreshPromise) {
+          this.refreshPromise = this.refreshAccessToken().finally(() => {
+            this.refreshPromise = null
+          })
+        }
+        const refreshed = await this.refreshPromise
         if (refreshed) {
-          // Retry with new token
-          headers['Authorization'] = `Bearer ${this.getAccessToken()}`
-          response = await fetch(url, { ...requestInit, headers })
+          // Retry with new token - rebuild headers to avoid stale references
+          const retryHeaders: Record<string, string> = {
+            ...(fetchOptions.headers as Record<string, string>),
+          }
+          if (!(body instanceof FormData)) {
+            retryHeaders['Content-Type'] = 'application/json'
+          }
+          retryHeaders['Authorization'] = `Bearer ${this.getAccessToken()}`
+          response = await fetch(url, { ...requestInit, headers: retryHeaders })
         } else {
           // Token refresh failed
           if (typeof window !== 'undefined') {
@@ -166,7 +182,15 @@ class ApiClient {
       }
 
       // Parse response
-      const result = await response.json().catch(() => ({}))
+      let result: any = {}
+      try {
+        result = await response.json()
+      } catch {
+        // Non-JSON response or empty body
+        if (response.ok) {
+          return { success: true }
+        }
+      }
 
       if (!response.ok) {
         return {
@@ -176,7 +200,11 @@ class ApiClient {
       }
 
       return { success: true, ...result }
-    } catch (error) {
+    } catch (error: unknown) {
+      // Don't treat aborted requests as errors
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return { success: false, error: 'Request was cancelled' }
+      }
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error',
@@ -184,25 +212,30 @@ class ApiClient {
     }
   }
 
-  // Convenience methods
+  // Convenience methods - strip nullish signal from options to avoid type conflicts
   async get<T = any>(endpoint: string, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'GET' })
+    const { signal, ...rest } = options || {}
+    return this.request<T>(endpoint, { ...rest, method: 'GET', signal: signal || undefined })
   }
 
   async post<T = any>(endpoint: string, body?: any, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'POST', body })
+    const { signal, ...rest } = options || {}
+    return this.request<T>(endpoint, { ...rest, method: 'POST', body, signal: signal || undefined })
   }
 
   async put<T = any>(endpoint: string, body?: any, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'PUT', body })
+    const { signal, ...rest } = options || {}
+    return this.request<T>(endpoint, { ...rest, method: 'PUT', body, signal: signal || undefined })
   }
 
   async patch<T = any>(endpoint: string, body?: any, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'PATCH', body })
+    const { signal, ...rest } = options || {}
+    return this.request<T>(endpoint, { ...rest, method: 'PATCH', body, signal: signal || undefined })
   }
 
   async delete<T = any>(endpoint: string, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' })
+    const { signal, ...rest } = options || {}
+    return this.request<T>(endpoint, { ...rest, method: 'DELETE', signal: signal || undefined })
   }
 }
 

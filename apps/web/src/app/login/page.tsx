@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { GraduationCap, ArrowRight, Shield, Mail, Lock, Eye, EyeOff, Layers, UserCheck, UserPlus, ShieldCheck, AlertCircle, CheckCircle, ArrowLeft, Loader2, User, FileText } from 'lucide-react'
+import { GraduationCap, ArrowRight, Shield, Mail, Lock, Eye, EyeOff, Layers, UserCheck, UserPlus, ShieldCheck, AlertCircle, CheckCircle, ArrowLeft, Loader2, User } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 
 interface UserAccount {
   email: string
@@ -10,36 +11,12 @@ interface UserAccount {
   role: 'student' | 'teacher' | 'admin'
 }
 
-const DEFAULT_ACCOUNTS: UserAccount[] = [
-  { email: 'student1@cse.edu.in', password: 'student123', role: 'student' },
-  { email: 'teacher@cse.edu.in', password: 'admin123', role: 'teacher' },
-  { email: 'admin@campus.edu', password: 'admin123', role: 'admin' },
-]
-
-function getStoredUsers(): UserAccount[] {
-  if (typeof window === 'undefined') return []
-  const stored = localStorage.getItem('deptwp_users')
-  return stored ? JSON.parse(stored) : []
-}
-
-function validateCredentials(email: string, password: string): UserAccount | null {
-  const normalizedEmail = email.toLowerCase().trim()
-  const normalizedPassword = password.trim()
-  
-  const allUsers = [...DEFAULT_ACCOUNTS, ...getStoredUsers()]
-  
-  const user = allUsers.find(
-    u => u.email.toLowerCase() === normalizedEmail && u.password === normalizedPassword
-  )
-  
-  return user || null
-}
-
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const mode = searchParams.get('mode') || 'signin'
-  
+  const { login, user, isAuthenticated } = useAuth()
+
   const [role, setRole] = useState<'student' | 'teacher' | 'admin'>('student')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -65,14 +42,12 @@ function LoginForm() {
     setCardVisible(true)
   }, [])
 
+  // Redirect if already authenticated
   useEffect(() => {
-    if (email.includes('@')) {
-      const prefix = email.split('@')[0].toLowerCase()
-      if (prefix.includes('student')) setRole('student')
-      else if (prefix.includes('teacher') || prefix.includes('faculty')) setRole('teacher')
-      else if (prefix.includes('admin')) setRole('admin')
+    if (isAuthenticated && user) {
+      router.push(`/dashboard/${user.role}`)
     }
-  }, [email])
+  }, [isAuthenticated, user, router])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(edu\.in|edu)$/
@@ -95,39 +70,15 @@ function LoginForm() {
 
     setIsSubmitting(true)
 
-    // Try API-based login first
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        localStorage.setItem('userRole', data.data.user.role)
-        localStorage.setItem('userEmail', email)
-        localStorage.setItem('isLoggedIn', 'true')
-        router.push(`/dashboard/${data.data.user.role}`)
-        return
-      }
-    } catch {}
-
-    // Fallback: client-side mock auth
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    const user = validateCredentials(email, password)
-
-    if (!user) {
-      setError('Invalid email or password')
+      await login({ email, password })
+      // Auth context will handle token storage and redirect
+      router.push(`/dashboard/${role}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password')
+    } finally {
       setIsSubmitting(false)
-      return
     }
-
-    localStorage.setItem('userRole', user.role)
-    localStorage.setItem('userEmail', email)
-    localStorage.setItem('isLoggedIn', 'true')
-    router.push(`/dashboard/${user.role}`)
   }
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -166,29 +117,27 @@ function LoginForm() {
 
     setIsSubmitting(true)
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Registration - goes to backend
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, firstName: name.split(' ')[0], lastName: name.split(' ').slice(1).join(' ') || '', role }),
+      })
 
-    const existingUsers = getStoredUsers()
-    const emailExists = existingUsers.some(u => u.email.toLowerCase() === email.toLowerCase().trim())
-    
-    if (emailExists) {
-      setError('An account with this email already exists')
+      if (res.ok) {
+        // Auto-login after registration
+        await login({ email, password })
+        router.push(`/dashboard/${role}`)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Registration failed. Please try again.')
+      }
+    } catch {
+      setError('Registration failed. Please try again.')
+    } finally {
       setIsSubmitting(false)
-      return
     }
-
-    const newUser: UserAccount = {
-      email: email.toLowerCase().trim(),
-      password: password,
-      role: role
-    }
-
-    existingUsers.push(newUser)
-    localStorage.setItem('deptwp_users', JSON.stringify(existingUsers))
-
-    localStorage.setItem('userRole', role)
-    localStorage.setItem('userEmail', email)
-    router.push(`/dashboard/${role}`)
   }
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -197,9 +146,23 @@ function LoginForm() {
       return
     }
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setResetSent(true)
-    setIsSubmitting(false)
+    
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail }),
+      })
+      if (res.ok) {
+        setResetSent(true)
+      } else {
+        setError('Failed to send reset email. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const roles = [
@@ -479,7 +442,7 @@ function LoginForm() {
         {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-2">
           <Shield className="w-3 h-3" />
-          Secure institutional access • DepartmentWP v2.0.5
+          Secure institutional access • DWAOP v2.0.5
         </p>
       </div>
     </div>

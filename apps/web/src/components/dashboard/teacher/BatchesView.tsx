@@ -3,15 +3,23 @@
 import { motion } from 'framer-motion'
 import { Users2, UserCheck, FileText, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ASSIGNMENTS_DATA } from './data'
+import { useTeacherDashboardContext, type ViewBatch } from './TeacherDashboardProvider'
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   show: { y: 0, opacity: 1 }
 }
 
-export function BatchesView({ batches, selectedBatch, onSelectBatch }: { batches: any[]; selectedBatch: string; onSelectBatch: (id: string) => void }) {
+interface BatchesViewProps {
+  batches: ViewBatch[]
+  selectedBatch: string
+  onSelectBatch: (id: string) => void
+}
+
+export function BatchesView({ batches, selectedBatch, onSelectBatch }: BatchesViewProps) {
+  const ctx = useTeacherDashboardContext()
   const batch = batches.find(b => b.id === selectedBatch)
+  const assignmentCount = batch ? ctx.assignments.filter(a => a.batch === batch.name).length : 0
 
   return (
     <div className="space-y-6">
@@ -64,7 +72,7 @@ export function BatchesView({ batches, selectedBatch, onSelectBatch }: { batches
                   <FileText className="w-5 h-5 text-amber-600" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-amber-600">{ASSIGNMENTS_DATA.filter(a => a.batch === batch.name).length}</p>
+              <p className="text-3xl font-bold text-amber-600">{assignmentCount}</p>
             </motion.div>
             <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
@@ -86,7 +94,7 @@ export function BatchesView({ batches, selectedBatch, onSelectBatch }: { batches
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-slate-900">{subject}</span>
                     <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-medium">
-                      {batch.lecturesTaken[subject] || 0} Lectures • {batch.labsTaken[subject] || 0} Labs
+                      {batch.lecturesTaken[subject] || 0} Lectures &bull; {batch.labsTaken[subject] || 0} Labs
                     </span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2">

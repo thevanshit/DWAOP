@@ -79,6 +79,36 @@ export interface TeacherAttendanceSession {
   total_students: number
 }
 
+export interface FacultyMember {
+  id?: string
+  name: string
+  role: string
+  email: string
+  phone: string
+  avatar: string
+  specialization: string
+}
+
+export interface Announcement {
+  id: string | number
+  title: string
+  date: string
+  content: string
+  from: string
+  pinned: boolean
+  read: boolean
+  status: string
+}
+
+export interface MarksEntry {
+  studentId: string | number
+  studentName: string
+  roll: string
+  marks: number | null
+  status: string
+  grade: string | null
+}
+
 export interface TeacherDashboardData {
   user: TeacherUser | null
   stats: TeacherStats | null
@@ -87,6 +117,11 @@ export interface TeacherDashboardData {
   assignments: TeacherAssignment[]
   tasks: TeacherTask[]
   attendanceSessions: TeacherAttendanceSession[]
+  students: Record<string, any[]>
+  timetable: Record<string, any[]>
+  marksData: MarksEntry[]
+  announcements: { toStudents: Announcement[]; fromAdmin: Announcement[] }
+  faculty: FacultyMember[]
   loading: boolean
   error: string | null
   refetch: () => void
@@ -102,6 +137,14 @@ export function useTeacherDashboard(): TeacherDashboardData {
   const [assignments, setAssignments] = useState<TeacherAssignment[]>([])
   const [tasks, setTasks] = useState<TeacherTask[]>([])
   const [attendanceSessions, setAttendanceSessions] = useState<TeacherAttendanceSession[]>([])
+  const [students, setStudents] = useState<Record<string, any[]>>({})
+  const [timetable, setTimetable] = useState<Record<string, any[]>>({})
+  const [marksData, setMarksData] = useState<MarksEntry[]>([])
+  const [announcements, setAnnouncements] = useState<{ toStudents: Announcement[]; fromAdmin: Announcement[] }>({
+    toStudents: [],
+    fromAdmin: [],
+  })
+  const [faculty, setFaculty] = useState<FacultyMember[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -117,7 +160,12 @@ export function useTeacherDashboard(): TeacherDashboardData {
         apiClient.get('/subjects'),
         apiClient.get('/assignments'),
         apiClient.get('/tasks'),
-        apiClient.get('/attendance'),
+        apiClient.get('/attendance/sessions'),
+        apiClient.get('/students'),
+        apiClient.get('/timetable'),
+        apiClient.get('/marks'),
+        apiClient.get('/announcements'),
+        apiClient.get('/faculty'),
       ])
 
       const userResult = results[0]
@@ -127,7 +175,7 @@ export function useTeacherDashboard(): TeacherDashboardData {
 
       const statsResult = results[1]
       if (statsResult.status === 'fulfilled' && statsResult.value.success) {
-        setStats(statsResult.value.data as TeacherStats)
+        setStats(statsResult.value.data?.stats as TeacherStats)
       }
 
       const batchesResult = results[2]
@@ -154,8 +202,54 @@ export function useTeacherDashboard(): TeacherDashboardData {
       if (attendanceResult.status === 'fulfilled' && attendanceResult.value.success) {
         setAttendanceSessions((attendanceResult.value.data || []) as TeacherAttendanceSession[])
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load dashboard data')
+
+      const studentsResult = results[7]
+      if (studentsResult.status === 'fulfilled' && studentsResult.value.success) {
+        const studentsData = studentsResult.value.data
+        if (Array.isArray(studentsData)) {
+          // Group students by batch
+          const grouped: Record<string, any[]> = {}
+          studentsData.forEach((s: any) => {
+            const batchKey = s.batch_id || s.batch || 'default'
+            if (!grouped[batchKey]) grouped[batchKey] = []
+            grouped[batchKey].push({
+              id: s.id,
+              name: s.name,
+              roll: s.roll_number || s.roll || '',
+            })
+          })
+          setStudents(grouped)
+        }
+      }
+
+      const timetableResult = results[8]
+      if (timetableResult.status === 'fulfilled' && timetableResult.value.success) {
+        const timetableData = timetableResult.value.data
+        setTimetable(timetableData || {})
+      }
+
+      const marksResult = results[9]
+      if (marksResult.status === 'fulfilled' && marksResult.value.success) {
+        const marksDataArr = marksResult.value.data
+        setMarksData(Array.isArray(marksDataArr) ? marksDataArr : [])
+      }
+
+      const announcementsResult = results[10]
+      if (announcementsResult.status === 'fulfilled' && announcementsResult.value.success) {
+        const annData = announcementsResult.value.data
+        setAnnouncements({
+          toStudents: Array.isArray(annData?.toStudents) ? annData.toStudents : [],
+          fromAdmin: Array.isArray(annData?.fromAdmin) ? annData.fromAdmin : [],
+        })
+      }
+
+      const facultyResult = results[11]
+      if (facultyResult.status === 'fulfilled' && facultyResult.value.success) {
+        setFaculty((facultyResult.value.data || []) as FacultyMember[])
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load dashboard data'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -173,6 +267,11 @@ export function useTeacherDashboard(): TeacherDashboardData {
     assignments,
     tasks,
     attendanceSessions,
+    students,
+    timetable,
+    marksData,
+    announcements,
+    faculty,
     loading,
     error,
     refetch: fetchData,

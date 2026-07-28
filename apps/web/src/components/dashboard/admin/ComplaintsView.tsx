@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, AlertOctagon, Clock, Activity, CheckCircle, User, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { COMPLAINTS } from './data'
+import { useAdminDashboardContext } from './AdminDashboardProvider'
 import { StatCard } from './StatCard'
 
 const itemVariants = {
@@ -13,9 +13,25 @@ const itemVariants = {
 }
 
 export function ComplaintsView() {
+  const { complaints } = useAdminDashboardContext()
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all')
 
-  const filteredComplaints = COMPLAINTS.filter(c => filter === 'all' || c.status === filter)
+  const filteredComplaints = useMemo(() =>
+    complaints.filter(c => filter === 'all' || c.status === filter),
+    [complaints, filter]
+  )
+
+  const stats = useMemo(() => ({
+    total: complaints.length,
+    pending: complaints.filter(c => c.status === 'pending').length,
+    inProgress: complaints.filter(c => c.status === 'in_progress').length,
+    resolved: complaints.filter(c => c.status === 'resolved').length,
+  }), [complaints])
+
+  const handleNewComplaint = () => {
+    // TODO: Open complaint creation modal
+    alert('New complaint form would open here')
+  }
 
   return (
     <div className="space-y-6">
@@ -24,28 +40,32 @@ export function ComplaintsView() {
           <h2 className="text-xl font-bold text-slate-900">Complaints & Issues</h2>
           <p className="text-sm text-slate-500 mt-1">Track and resolve complaints from students and faculty</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+        <button
+          onClick={handleNewComplaint}
+          type="button"
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20"
+        >
           <Plus className="w-4 h-4" /> New Complaint
         </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Complaints" value={COMPLAINTS.length} icon={AlertOctagon} color="blue" />
-        <StatCard label="Pending" value={COMPLAINTS.filter(c => c.status === 'pending').length} icon={Clock} color="amber" />
-        <StatCard label="In Progress" value={COMPLAINTS.filter(c => c.status === 'in_progress').length} icon={Activity} color="purple" />
-        <StatCard label="Resolved" value={COMPLAINTS.filter(c => c.status === 'resolved').length} icon={CheckCircle} color="green" />
+        <StatCard label="Total Complaints" value={stats.total} icon={AlertOctagon} color="blue" />
+        <StatCard label="Pending" value={stats.pending} icon={Clock} color="amber" />
+        <StatCard label="In Progress" value={stats.inProgress} icon={Activity} color="purple" />
+        <StatCard label="Resolved" value={stats.resolved} icon={CheckCircle} color="green" />
       </div>
 
       <div className="flex gap-2">
-        <button onClick={() => setFilter('all')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'all' ? "bg-slate-800 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
-        <button onClick={() => setFilter('pending')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'pending' ? "bg-amber-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Pending</button>
-        <button onClick={() => setFilter('in_progress')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'in_progress' ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>In Progress</button>
-        <button onClick={() => setFilter('resolved')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'resolved' ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Resolved</button>
+        <button onClick={() => setFilter('all')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'all' ? "bg-slate-800 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
+        <button onClick={() => setFilter('pending')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'pending' ? "bg-amber-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Pending</button>
+        <button onClick={() => setFilter('in_progress')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'in_progress' ? "bg-purple-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>In Progress</button>
+        <button onClick={() => setFilter('resolved')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", filter === 'resolved' ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Resolved</button>
       </div>
 
       <div className="space-y-3">
         {filteredComplaints.map((complaint) => (
-          <motion.div 
+          <motion.div
             key={complaint.id}
             variants={itemVariants}
             className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow"

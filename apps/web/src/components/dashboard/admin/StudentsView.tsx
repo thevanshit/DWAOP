@@ -1,33 +1,39 @@
 'use client'
 
-import { useState } from 'react'
-import { Users, CheckCircle, AlertTriangle, Award, Download, CheckCircle as CheckIcon, XCircle } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Users, CheckCircle, AlertTriangle, Award, Download, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { STUDENT_DATA } from './data'
+import { useAdminDashboardContext } from './AdminDashboardProvider'
 import { StatCard } from './StatCard'
 
 export function StudentsView() {
+  const { students } = useAdminDashboardContext()
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'at_risk'>('all')
   const [batchFilter, setBatchFilter] = useState('all')
   const [eligibleFilter, setEligibleFilter] = useState<'all' | 'eligible' | 'not_eligible'>('all')
 
-  const filteredStudents = STUDENT_DATA.filter(s => {
-    const matchesStatus = statusFilter === 'all' || s.status === statusFilter
-    const matchesBatch = batchFilter === 'all' || s.batch === batchFilter
-    const matchesEligible = eligibleFilter === 'all' || (eligibleFilter === 'eligible' && s.eligible) || (eligibleFilter === 'not_eligible' && !s.eligible)
-    return matchesStatus && matchesBatch && matchesEligible
-  })
+  const filteredStudents = useMemo(() =>
+    students.filter(s => {
+      const matchesStatus = statusFilter === 'all' || s.status === statusFilter
+      const matchesBatch = batchFilter === 'all' || s.batch === batchFilter
+      const matchesEligible = eligibleFilter === 'all' ||
+        (eligibleFilter === 'eligible' && s.eligible) ||
+        (eligibleFilter === 'not_eligible' && !s.eligible)
+      return matchesStatus && matchesBatch && matchesEligible
+    }),
+    [students, statusFilter, batchFilter, eligibleFilter]
+  )
 
-  const stats = {
-    total: STUDENT_DATA.length,
-    active: STUDENT_DATA.filter(s => s.status === 'active').length,
-    atRisk: STUDENT_DATA.filter(s => s.status === 'at_risk').length,
-    eligible: STUDENT_DATA.filter(s => s.eligible).length,
-    notEligible: STUDENT_DATA.filter(s => !s.eligible).length,
-    feePending: STUDENT_DATA.filter(s => s.feeStatus === 'pending').length,
-    hostel: STUDENT_DATA.filter(s => s.hostelStatus === 'hostel').length,
-    dayScholar: STUDENT_DATA.filter(s => s.hostelStatus === 'day_scholar').length,
-  }
+  const stats = useMemo(() => ({
+    total: students.length,
+    active: students.filter(s => s.status === 'active').length,
+    atRisk: students.filter(s => s.status === 'at_risk').length,
+    eligible: students.filter(s => s.eligible).length,
+    notEligible: students.filter(s => !s.eligible).length,
+    feePending: students.filter(s => s.feeStatus === 'pending').length,
+    hostel: students.filter(s => s.hostelStatus === 'hostel').length,
+    dayScholar: students.filter(s => s.hostelStatus === 'day_scholar').length,
+  }), [students])
 
   return (
     <div className="space-y-6">
@@ -36,7 +42,7 @@ export function StudentsView() {
           <h2 className="text-xl font-bold text-slate-900">Student Management</h2>
           <p className="text-sm text-slate-500 mt-1">Manage and monitor all students</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+        <button type="button" className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
           <Download className="w-4 h-4" /> Export Data
         </button>
       </div>
@@ -50,9 +56,9 @@ export function StudentsView() {
 
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-xs text-slate-500 mr-2">Status:</span>
-        <button onClick={() => setStatusFilter('all')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", statusFilter === 'all' ? "bg-slate-800 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
-        <button onClick={() => setStatusFilter('active')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", statusFilter === 'active' ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Active</button>
-        <button onClick={() => setStatusFilter('at_risk')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", statusFilter === 'at_risk' ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>At Risk</button>
+        <button onClick={() => setStatusFilter('all')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", statusFilter === 'all' ? "bg-slate-800 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
+        <button onClick={() => setStatusFilter('active')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", statusFilter === 'active' ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Active</button>
+        <button onClick={() => setStatusFilter('at_risk')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", statusFilter === 'at_risk' ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>At Risk</button>
         <div className="border-l border-slate-200 mx-2" />
         <span className="text-xs text-slate-500 mr-2">Batch:</span>
         <select value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-slate-200">
@@ -63,9 +69,9 @@ export function StudentsView() {
         </select>
         <div className="border-l border-slate-200 mx-2" />
         <span className="text-xs text-slate-500 mr-2">Eligibility:</span>
-        <button onClick={() => setEligibleFilter('all')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", eligibleFilter === 'all' ? "bg-slate-800 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
-        <button onClick={() => setEligibleFilter('eligible')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", eligibleFilter === 'eligible' ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Eligible</button>
-        <button onClick={() => setEligibleFilter('not_eligible')} className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", eligibleFilter === 'not_eligible' ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Not Eligible</button>
+        <button onClick={() => setEligibleFilter('all')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", eligibleFilter === 'all' ? "bg-slate-800 text-white" : "bg-white text-slate-600 border border-slate-200")}>All</button>
+        <button onClick={() => setEligibleFilter('eligible')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", eligibleFilter === 'eligible' ? "bg-green-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Eligible</button>
+        <button onClick={() => setEligibleFilter('not_eligible')} type="button" className={cn("px-3 py-1.5 rounded-lg text-xs font-medium", eligibleFilter === 'not_eligible' ? "bg-red-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Not Eligible</button>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -114,7 +120,7 @@ export function StudentsView() {
                   </td>
                   <td className="px-4 py-3 text-center">
                     {student.eligible ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600"><CheckIcon className="w-3 h-3" /> Eligible</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600"><CheckCircle className="w-3 h-3" /> Eligible</span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600"><XCircle className="w-3 h-3" /> Not Eligible</span>
                     )}

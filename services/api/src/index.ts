@@ -6,6 +6,8 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
+import { AppError } from '@/utils/AppError';
+import { ApiResponse } from '@/utils/ApiResponse';
 import Database from '@/config/database';
 import { WorkflowEngine } from '@/core/workflow/engine';
 import { RBACService } from '@/core/rbac/service';
@@ -103,8 +105,15 @@ class Application {
           styleSrc: ["'self'", "'unsafe-inline'"],
           scriptSrc: ["'self'"],
           imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "https:"],
+          fontSrc: ["'self'", "https:", "data:"],
         },
       },
+      frameguard: { action: 'deny' },
+      noSniff: true,
+      hidePoweredBy: true,
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     }));
 
     // CORS configuration
@@ -198,18 +207,29 @@ class Application {
   private initializeErrorHandling(): void {
     // 404 handler
     this.app.use('*', (req, res) => {
-      res.status(404).json({
-        error: 'Endpoint not found',
+      ApiResponse.error(res, 'Endpoint not found', 404, {
         path: req.originalUrl,
         method: req.method,
       });
     });
 
     // Global error handler
-    this.app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    this.app.use((error: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+      // Handle AppError with custom status codes
+      if (error instanceof AppError) {
+        logger.warn('Application error', {
+          error: error.message,
+          statusCode: error.statusCode,
+          url: req.url,
+          method: req.method,
+        });
+        ApiResponse.error(res, error.message, error.statusCode, error.details);
+        return;
+      }
+
       logger.error('Unhandled error', {
         error: error.message,
-        stack: error.stack,
+        stack: config.nodeEnv !== 'production' ? error.stack : undefined,
         url: req.url,
         method: req.method,
       });
@@ -219,16 +239,42 @@ class Application {
         ? 'Internal server error'
         : error.message;
 
-      res.status(500).json({
-        error: message,
-        timestamp: new Date().toISOString(),
-      });
+      ApiResponse.error(res, message, 500);
     });
   }
 
   /**
    * Start the application
    */
+  /**
+   * Verify that required database tables exist
+   */
+  private async verifyDatabaseTables(): Promise<void> {
+    const requiredTables = [
+      'users', 'roles', 'permissions', 'role_permissions',
+      'departments', 'batches', 'subjects',
+      'workflows', 'workflow_transitions',
+      'attendance_sessions', 'attendance_records',
+      'assignments', 'assignment_submissions',
+      'internal_marks', 'leave_requests',
+      'student_track_reports', 'audit_logs',
+    ];
+
+    const result = await this.database.query(`
+      SELECT table_name FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+    `);
+
+    const existingTables = result.rows.map((r: any) => r.table_name);
+    const missingTables = requiredTables.filter(t => !existingTables.includes(t));
+
+    if (missingTables.length > 0) {
+      logger.warn(`Missing database tables: ${missingTables.join(', ')}. Run migrations first.`);
+    } else {
+      logger.info('All required database tables verified');
+    }
+  }
+
   public async start(): Promise<void> {
     try {
       await this.initialize();
@@ -238,6 +284,9 @@ class Application {
       if (!dbConnected) {
         throw new Error('Database connection failed');
       }
+
+      // Verify required tables exist
+      await this.verifyDatabaseTables();
 
       // Start server with WebSocket support
       this.server.listen(config.port, () => {

@@ -3,13 +3,20 @@
 import { motion } from 'framer-motion'
 import { Plus, AlertCircle, BookOpen, Clipboard, UserCheck, FileText, Clock, Users2, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import type { ViewBatch, AnalyticsData } from './TeacherDashboardProvider'
+
+interface AnalyticsViewProps {
+  batches: ViewBatch[]
+  analytics: AnalyticsData
+  onNewAssignment?: () => void
+}
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   show: { y: 0, opacity: 1 }
 }
 
-export function AnalyticsView({ batches, analytics, onNewAssignment }: { batches: any[]; analytics: any; onNewAssignment?: () => void }) {
+export function AnalyticsView({ batches, analytics, onNewAssignment }: AnalyticsViewProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -27,9 +34,9 @@ export function AnalyticsView({ batches, analytics, onNewAssignment }: { batches
       {/* Risk Alerts */}
       {analytics.riskAlerts.length > 0 && (
         <div className="space-y-2">
-          {analytics.riskAlerts.map((alert: any, i: number) => (
+          {analytics.riskAlerts.map((alert, i) => (
             <motion.div 
-              key={i} 
+              key={`${alert.batch}-${i}`} 
               variants={itemVariants}
               className={cn("flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium border",
                 alert.type === 'warning' ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-red-50 text-red-700 border-red-200")}
@@ -103,7 +110,7 @@ export function AnalyticsView({ batches, analytics, onNewAssignment }: { batches
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
         <h3 className="text-base font-semibold text-slate-900 mb-4">Batch-wise Performance</h3>
         <div className="space-y-3">
-          {analytics.batchPerformance.map((batch: any) => (
+          {analytics.batchPerformance.map((batch) => (
             <motion.div 
               key={batch.name} 
               variants={itemVariants}
@@ -112,7 +119,7 @@ export function AnalyticsView({ batches, analytics, onNewAssignment }: { batches
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                    {batch.name.split('-')[0].slice(0,2)}{batch.name.split('-')[1]?.slice(0,2) || ''}
+                    {batch.name.split('-')[0]?.slice(0,2)}{batch.name.split('-')[1]?.slice(0,2) || ''}
                   </div>
                   <span className="font-medium text-slate-900">{batch.name}</span>
                 </div>

@@ -1,56 +1,29 @@
-// Mock Authentication for Development
-// This bypasses the actual database for quick testing
-
-interface MockUser {
-  id: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  departmentId?: string;
-}
-
-const mockUsers: MockUser[] = [
-  {
-    id: 'admin001',
-    email: 'admin@campus.edu',
-    password: 'admin123',
-    firstName: 'System',
-    lastName: 'Administrator',
-    role: 'admin',
-    departmentId: 'dept001'
-  },
-  {
-    id: 'teacher001',
-    email: 'teacher@campus.edu',
-    password: 'teacher123',
-    firstName: 'John',
-    lastName: 'Smith',
-    role: 'teacher',
-    departmentId: 'dept002'
-  },
-  {
-    id: 'student001',
-    email: 'student@campus.edu',
-    password: 'student123',
-    firstName: 'Alice',
-    lastName: 'Johnson',
-    role: 'student',
-    departmentId: 'dept003'
-  }
-];
+/**
+ * @deprecated Mock Authentication Module
+ * 
+ * This module is DEPRECATED and should NOT be used in production.
+ * Authentication now flows through the backend API via useAuth() hook.
+ * 
+ * This file is kept only as a reference for development testing.
+ * All mock credentials have been removed for security.
+ * 
+ * Remove this file before production deployment.
+ */
 
 export const mockAuth = {
-  authenticate: (email: string, password: string): MockUser | null => {
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-    return user || null;
+  authenticate: (_email: string, _password: string): null => {
+    console.warn('[DEPRECATED] mockAuth.authenticate() called. Use useAuth().login() instead.');
+    return null;
   },
   
-  getUsers: (): MockUser[] => mockUsers,
+  getUsers: (): [] => {
+    console.warn('[DEPRECATED] mockAuth.getUsers() called. Use API /auth/me instead.');
+    return [];
+  },
   
-  getUserById: (id: string): MockUser | null => {
-    return mockUsers.find(u => u.id === id) || null;
+  getUserById: (_id: string): null => {
+    console.warn('[DEPRECATED] mockAuth.getUserById() called. Use API /users/:id instead.');
+    return null;
   }
 };
 

@@ -1,17 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, Calendar, FileText, Users, Kanban, Settings, 
-  Bell, Plus, X, ChevronLeft, ChevronRight, ClipboardCheck, Award,
-  CheckCircle2, Clock, AlertTriangle, TrendingUp, Users2, CalendarDays, 
-  Clipboard, BarChart3, Send, Layers, UserCheck, FileUp,
-  BookMarked, ClipboardList, BarChart, Megaphone, Search, Filter, Upload,
-  Download, Eye, Edit, Trash2, Save, UserMinus, UserPlus, Clock3, Check,
-  AlertCircle, Pin, Archive, PanelLeftClose, PanelLeft, ArrowUpRight, ArrowDownRight,
-  BookOpen, GraduationCap, Target, Activity, Sparkles, Mail, Phone, User
+  Bell, ChevronRight, ClipboardCheck, Award,
+  Layers, BarChart3, Megaphone, UserCheck,
+  PanelLeftClose, Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +32,15 @@ const containerVariants = {
   show: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
 
-function NavButton({ icon: Icon, label, isActive, collapsed, onClick }: { icon: any; label: string; isActive?: boolean; collapsed: boolean; onClick: () => void }) {
+interface NavButtonProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  isActive?: boolean;
+  collapsed: boolean;
+  onClick: () => void;
+}
+
+function NavButton({ icon: Icon, label, isActive, collapsed, onClick }: NavButtonProps) {
   return (
     <motion.button
       onClick={onClick}
@@ -58,8 +61,46 @@ function NavButton({ icon: Icon, label, isActive, collapsed, onClick }: { icon: 
   );
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-[1400px] mx-auto space-y-6">
+        <div className="h-14 bg-white rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-32 bg-white rounded-2xl animate-pulse" />
+          ))}
+        </div>
+        <div className="grid grid-cols-[2fr_1fr] gap-6">
+          <div className="h-64 bg-white rounded-2xl animate-pulse" />
+          <div className="h-64 bg-white rounded-2xl animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorBanner({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+      <div className="bg-white rounded-2xl border border-red-200 p-8 max-w-md w-full text-center shadow-lg">
+        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Activity className="w-8 h-8 text-red-600" />
+        </div>
+        <h2 className="text-lg font-semibold text-slate-900 mb-2">Something went wrong</h2>
+        <p className="text-sm text-slate-500 mb-6">{message}</p>
+        <button
+          onClick={onRetry}
+          className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function DashboardContent() {
-  const router = useRouter();
   const ctx = useTeacherDashboardContext();
   
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -68,11 +109,21 @@ function DashboardContent() {
   const [selectedBatch, setSelectedBatch] = useState(ctx.batches[0]?.id || '');
   const [selectedAssignment, setSelectedAssignment] = useState<number | null>(null);
   const [announcementType, setAnnouncementType] = useState<'toStudents' | 'fromAdmin'>('toStudents');
-  const [attendance, setAttendance] = useState<Record<number, 'present' | 'absent' | 'late'>>({});
+  const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent' | 'late'>>({});
   const [showNewAssignment, setShowNewAssignment] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
 
-  const currentUser = ctx.user || { name: 'Dr. Vineet Jain', role: 'Assistant Professor', avatar: 'VJ' };
+  // Show loading state
+  if (ctx.loading) {
+    return <LoadingSkeleton />;
+  }
+
+  // Show error state
+  if (ctx.error) {
+    return <ErrorBanner message={ctx.error} onRetry={ctx.refetch} />;
+  }
+
+  const currentUser = ctx.user || { name: 'Faculty Member', role: 'Faculty', avatar: 'FA' };
 
   const analytics = {
     classesToday: ctx.todayClasses.length,
@@ -83,21 +134,21 @@ function DashboardContent() {
   };
 
   const currentBatch = ctx.batches.find(b => b.id === selectedBatch);
-  const currentStudents = ctx.students[selectedBatch as keyof typeof ctx.students] || [];
+  const currentStudents = ctx.students[selectedBatch] || [];
 
-  const handleAttendanceMark = (studentId: number, status: 'present' | 'absent' | 'late') => {
-    setAttendance(prev => ({ ...prev, [studentId]: status }));
+  const handleAttendanceMark = (studentId: string | number, status: 'present' | 'absent' | 'late') => {
+    setAttendance(prev => ({ ...prev, [String(studentId)]: status }));
   };
 
   const handleMarkAllPresent = () => {
-    currentStudents.forEach((s: any) => {
-      setAttendance(prev => ({ ...prev, [s.id]: 'present' }));
+    currentStudents.forEach((s) => {
+      setAttendance(prev => ({ ...prev, [String(s.id)]: 'present' }));
     });
   };
 
   const handleMarkAllAbsent = () => {
-    currentStudents.forEach((s: any) => {
-      setAttendance(prev => ({ ...prev, [s.id]: 'absent' }));
+    currentStudents.forEach((s) => {
+      setAttendance(prev => ({ ...prev, [String(s.id)]: 'absent' }));
     });
   };
 
@@ -167,7 +218,7 @@ function DashboardContent() {
 
           <div className="space-y-1 mt-4">
             {!sidebarCollapsed && <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-2 mb-1.5">Teaching</p>}
-            <NavButton icon={Users2} label="Batches" isActive={activeTab === 'batches'} collapsed={sidebarCollapsed} onClick={() => setActiveTab('batches')} />
+            <NavButton icon={UserCheck} label="Batches" isActive={activeTab === 'batches'} collapsed={sidebarCollapsed} onClick={() => setActiveTab('batches')} />
             <NavButton icon={ClipboardCheck} label="Attendance" isActive={activeTab === 'attendance'} collapsed={sidebarCollapsed} onClick={() => setActiveTab('attendance')} />
             <NavButton icon={FileText} label="Assignments" isActive={activeTab === 'assignments'} collapsed={sidebarCollapsed} onClick={() => setActiveTab('assignments')} />
             <NavButton icon={Award} label="Marks Entry" isActive={activeTab === 'marks'} collapsed={sidebarCollapsed} onClick={() => setActiveTab('marks')} />
@@ -216,7 +267,7 @@ function DashboardContent() {
 
         {/* Modals */}
         <NewAssignmentModal isOpen={showNewAssignment} onClose={() => setShowNewAssignment(false)} batches={ctx.batches} />
-        <AddTaskModal isOpen={showAddTask} onClose={() => setShowAddTask(false)} />
+        <AddTaskModal isOpen={showAddTask} onClose={() => setShowAddTask(false)} batches={ctx.batches} subjects={ctx.batches[0]?.subjects || []} />
       </main>
     </div>
   );

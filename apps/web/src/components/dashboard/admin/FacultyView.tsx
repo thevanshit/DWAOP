@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Plus, Mail, Phone, MessageSquare, Eye, ClipboardList } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { FACULTY } from './data'
+import { useAdminDashboardContext } from './AdminDashboardProvider'
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
@@ -11,6 +11,26 @@ const itemVariants = {
 }
 
 export function FacultyView() {
+  const { faculty } = useAdminDashboardContext()
+
+  const handleMessage = (name: string) => {
+    // TODO: Integrate with messaging system
+    console.log(`Open message dialog for ${name}`)
+    alert(`Messaging ${name} would open here`)
+  }
+
+  const handleView = (name: string) => {
+    // TODO: Navigate to faculty detail/profile page
+    console.log(`View profile for ${name}`)
+    alert(`Profile for ${name} would open here`)
+  }
+
+  const handleAssignTask = (name: string) => {
+    // TODO: Open task assignment modal
+    console.log(`Assign task to ${name}`)
+    alert(`Task assignment for ${name} would open here`)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -18,21 +38,21 @@ export function FacultyView() {
           <h2 className="text-xl font-bold text-slate-900">Faculty Management</h2>
           <p className="text-sm text-slate-500 mt-1">Manage faculty members and their workload</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+        <button type="button" className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20">
           <Plus className="w-4 h-4" /> Add Faculty
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {FACULTY.map((f, i) => (
-          <motion.div 
-            key={i}
+        {faculty.map((f) => (
+          <motion.div
+            key={f.id}
             variants={itemVariants}
             className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all"
           >
             <div className="flex items-start gap-4">
               <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-600/20">
-                {f.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                {f.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
@@ -46,7 +66,7 @@ export function FacultyView() {
                 <p className="text-[10px] text-blue-600 font-medium mt-1">{f.specialization}</p>
               </div>
             </div>
-            
+
             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
               <div className="flex items-center gap-2 text-xs text-slate-600">
                 <Mail className="w-3.5 h-3.5" />
@@ -67,24 +87,39 @@ export function FacultyView() {
                 )}>{f.workload}%</span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2">
-                <div 
+                <div
                   className={cn(
                     "h-2 rounded-full",
                     f.workload >= 80 ? "bg-red-500" : f.workload >= 70 ? "bg-amber-500" : "bg-green-500"
-                  )} 
-                  style={{ width: `${f.workload}%` }} 
+                  )}
+                  style={{ width: `${f.workload}%` }}
                 />
               </div>
             </div>
 
             <div className="mt-4 flex gap-2">
-              <button className="flex-1 py-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+              <button
+                onClick={() => handleMessage(f.name)}
+                type="button"
+                aria-label={`Message ${f.name}`}
+                className="flex-1 py-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
                 <MessageSquare className="w-3.5 h-3.5 inline mr-1" /> Message
               </button>
-              <button className="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+              <button
+                onClick={() => handleView(f.name)}
+                type="button"
+                aria-label={`View ${f.name}`}
+                className="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+              >
                 <Eye className="w-3.5 h-3.5 inline mr-1" /> View
               </button>
-              <button className="flex-1 py-2 text-xs font-medium text-amber-600 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
+              <button
+                onClick={() => handleAssignTask(f.name)}
+                type="button"
+                aria-label={`Assign task to ${f.name}`}
+                className="flex-1 py-2 text-xs font-medium text-amber-600 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+              >
                 <ClipboardList className="w-3.5 h-3.5 inline mr-1" /> Assign Task
               </button>
             </div>

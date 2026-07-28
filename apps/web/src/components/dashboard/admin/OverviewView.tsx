@@ -1,9 +1,10 @@
 'use client'
 
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Home, User, Award, Building2, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { OVERVIEW_STATS, QUICK_ACTIONS, WORKFLOWS, FACULTY } from './data'
+import { useAdminDashboardContext } from './AdminDashboardProvider'
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
@@ -13,18 +14,29 @@ const itemVariants = {
 type AdminTab = 'overview' | 'workflows' | 'students' | 'faculty' | 'requests' | 'coordination' | 'analytics' | 'complaints' | 'announcements' | 'compliance' | 'settings'
 
 export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
-  const greeting = (() => {
+  const { overviewStats, quickActions, workflows, faculty } = useAdminDashboardContext()
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const greeting = useMemo(() => {
     const hour = new Date().getHours()
     if (hour < 12) return 'Good morning'
     if (hour < 17) return 'Good afternoon'
     return 'Good evening'
-  })()
+  }, [])
 
-  const workflowPreview = WORKFLOWS.slice(0, 6)
+  const filteredWorkflows = useMemo(() => {
+    if (!searchQuery.trim()) return workflows.slice(0, 6)
+    const q = searchQuery.toLowerCase()
+    return workflows.filter(wf =>
+      wf.title.toLowerCase().includes(q) ||
+      wf.assignee?.toLowerCase().includes(q) ||
+      wf.batch?.toLowerCase().includes(q)
+    ).slice(0, 6)
+  }, [workflows, searchQuery])
 
   return (
     <div className="space-y-6">
-      <motion.div 
+      <motion.div
         variants={itemVariants}
         className="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl border border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.02),0_4px_12px_rgba(0,0,0,0.02)] p-6 md:p-8"
       >
@@ -39,9 +51,9 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
       </motion.div>
 
       <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {OVERVIEW_STATS.map((stat, i) => (
-          <motion.div 
-            key={i}
+        {overviewStats.map((stat) => (
+          <motion.div
+            key={stat.label}
             whileHover={{ y: -2 }}
             className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group"
           >
@@ -54,7 +66,7 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
                 stat.color === 'amber' ? "bg-gradient-to-br from-amber-50 to-amber-100" :
                 "bg-gradient-to-br from-purple-50 to-purple-100"
               )}>
-                <stat.icon className={cn("w-5 h-5", 
+                <stat.icon className={cn("w-5 h-5",
                   stat.color === 'red' ? "text-red-600" :
                   stat.color === 'blue' ? "text-blue-600" :
                   stat.color === 'amber' ? "text-amber-600" :
@@ -71,20 +83,27 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
       <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-slate-900">Workflow Overview</h3>
-          <button onClick={() => onNavigate('workflows')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          <button
+            onClick={() => onNavigate('workflows')}
+            type="button"
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
             View All →
           </button>
         </div>
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search workflows (students, faculty, administration)..."
             className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+            aria-label="Search workflows"
           />
         </div>
         <div className="space-y-2">
-          {workflowPreview.map((wf) => (
+          {filteredWorkflows.map((wf) => (
             <div key={wf.id} className="flex items-center justify-between p-3 bg-slate-50/80 rounded-xl hover:bg-slate-100 transition-colors">
               <div className="flex items-center gap-3">
                 <div className={cn(
@@ -114,6 +133,9 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
               </span>
             </div>
           ))}
+          {filteredWorkflows.length === 0 && (
+            <p className="text-sm text-slate-400 text-center py-4">No workflows match your search</p>
+          )}
         </div>
       </motion.div>
 
@@ -121,10 +143,11 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
         <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-base font-semibold text-slate-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
-            {QUICK_ACTIONS.map((action, i) => (
-              <button 
-                key={i}
+            {quickActions.map((action) => (
+              <button
+                key={action.label}
                 onClick={() => onNavigate(action.href.replace('#', '') as AdminTab)}
+                type="button"
                 className={cn(
                   "flex items-center gap-3 p-4 rounded-xl border hover:shadow-md transition-all group",
                   action.color === 'blue' ? "bg-blue-50/50 border-blue-100 hover:border-blue-300" :
@@ -132,8 +155,9 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
                   action.color === 'amber' ? "bg-amber-50/50 border-amber-100 hover:border-amber-300" :
                   "bg-purple-50/50 border-purple-100 hover:border-purple-300"
                 )}
+                aria-label={`Navigate to ${action.label}`}
               >
-                <action.icon className={cn("w-5 h-5", 
+                <action.icon className={cn("w-5 h-5",
                   action.color === 'blue' ? "text-blue-600" :
                   action.color === 'green' ? "text-green-600" :
                   action.color === 'amber' ? "text-amber-600" :
@@ -148,10 +172,10 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
         <motion.div variants={itemVariants} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-base font-semibold text-slate-900 mb-4">Faculty Workload</h3>
           <div className="space-y-3">
-            {FACULTY.slice(0, 4).map((f, i) => (
-              <div key={i} className="flex items-center gap-3">
+            {faculty.slice(0, 4).map((f) => (
+              <div key={f.id} className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                  {f.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                  {f.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -159,14 +183,14 @@ export function OverviewView({ onNavigate }: { onNavigate: (tab: AdminTab) => vo
                     <span className="text-xs text-slate-500">{f.workload}%</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div 
+                    <div
                       className={cn(
                         "h-2 rounded-full",
                         f.workload >= 80 ? "bg-red-500" :
                         f.workload >= 70 ? "bg-amber-500" :
                         "bg-green-500"
-                      )} 
-                      style={{ width: `${f.workload}%` }} 
+                      )}
+                      style={{ width: `${f.workload}%` }}
                     />
                   </div>
                 </div>

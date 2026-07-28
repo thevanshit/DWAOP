@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { COORDINATION_TASKS } from './data'
+import { useAdminDashboardContext } from './AdminDashboardProvider'
 
 const priorityColors: Record<string, string> = {
   critical: "bg-red-100 text-red-700",
@@ -28,11 +28,15 @@ const typeColors: Record<string, string> = {
 }
 
 export function CoordinationView() {
+  const { coordinationTasks } = useAdminDashboardContext()
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredTasks = COORDINATION_TASKS.filter(t =>
-    t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.assignee?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTasks = useMemo(() =>
+    coordinationTasks.filter(t =>
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.assignee?.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [coordinationTasks, searchQuery]
   )
 
   return (
@@ -44,12 +48,13 @@ export function CoordinationView() {
         </div>
         <div className="relative w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tasks..."
             className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+            aria-label="Search coordination tasks"
           />
         </div>
       </div>
@@ -75,13 +80,13 @@ export function CoordinationView() {
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-700">{task.assignee}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", typeColors[task.type])}>{task.type}</span>
+                    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", typeColors[task.type] || "bg-slate-100 text-slate-600")}>{task.type}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", priorityColors[task.priority])}>{task.priority}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", statusColors[task.status])}>{task.status.replace('_', ' ')}</span>
+                    <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-full", statusColors[task.status] || "bg-slate-100 text-slate-600")}>{task.status.replace('_', ' ')}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="text-xs text-slate-600">{task.dueDate || '—'}</span>

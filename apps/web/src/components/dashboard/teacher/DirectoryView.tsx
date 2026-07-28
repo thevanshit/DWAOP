@@ -2,20 +2,35 @@
 
 import { motion } from 'framer-motion'
 import { MessageSquare, User, Mail, Phone } from 'lucide-react'
+import type { FacultyMember } from '@/hooks/useTeacherDashboard'
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
   show: { y: 0, opacity: 1 }
 }
 
-export function DirectoryView({ faculty }: { faculty: any[] }) {
+interface DirectoryViewProps {
+  faculty: FacultyMember[]
+}
+
+export function DirectoryView({ faculty }: DirectoryViewProps) {
+  const handleMessage = (member: FacultyMember) => {
+    window.location.href = `mailto:${member.email}`
+  }
+
+  const handleProfile = (member: FacultyMember) => {
+    // Could navigate to profile page or show modal
+    // For now, show a toast-like action
+    alert(`Viewing profile of ${member.name}`)
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-slate-900">Faculty Directory</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {faculty.map((f, i) => (
+        {faculty.map((f) => (
           <motion.div 
-            key={i} 
+            key={f.email} 
             variants={itemVariants}
             className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all group"
           >
@@ -40,10 +55,16 @@ export function DirectoryView({ faculty }: { faculty: any[] }) {
               </div>
             </div>
             <div className="mt-4 flex gap-2">
-              <button className="flex-1 py-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+              <button 
+                onClick={() => handleMessage(f)}
+                className="flex-1 py-2 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+              >
                 <MessageSquare className="w-3.5 h-3.5 inline mr-1" /> Message
               </button>
-              <button className="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+              <button 
+                onClick={() => handleProfile(f)}
+                className="flex-1 py-2 text-xs font-medium text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+              >
                 <User className="w-3.5 h-3.5 inline mr-1" /> Profile
               </button>
             </div>

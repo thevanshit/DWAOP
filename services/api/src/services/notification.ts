@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { logger } from '@/utils/logger';
@@ -41,38 +42,52 @@ export class NotificationService {
     this.io.on('connection', (socket) => {
       logger.info(`User connected: ${socket.id}`);
 
-      // Handle user authentication
+      // Handle user authentication via JWT
       socket.on('authenticate', async (data) => {
         try {
-          const { token, userId } = data;
+          const { token } = data;
           
-          // Verify token (this would use your auth service)
-          // For now, we'll trust the client
-          if (userId) {
-            // Associate socket with user
-            if (!this.connectedUsers.has(userId)) {
-              this.connectedUsers.set(userId, new Set());
-            }
-            this.connectedUsers.get(userId)!.add(socket.id);
-            
-            // Join user to their personal room
-            socket.join(`user:${userId}`);
-            
-            // Join role-based rooms
-            const userRole = data.role; // This would come from verified token
-            socket.join(`role:${userRole}`);
-            
-            // Send pending notifications
-            await this.sendPendingNotifications(userId, socket);
-            
-            socket.emit('authenticated', { success: true });
-            logger.info(`User ${userId} authenticated with socket ${socket.id}`);
-          } else {
-            socket.emit('authentication_error', { error: 'Invalid credentials' });
+          if (!token) {
+            socket.emit('authentication_error', { error: 'No token provided' });
+            return;
           }
+
+          // Verify JWT token
+          const decoded = jwt.verify(token, config.jwt.secret) as {
+            userId: string;
+            email: string;
+            role: string;
+            departmentId?: string;
+          };
+
+          const { userId, role } = decoded;
+
+          // Associate socket with user
+          if (!this.connectedUsers.has(userId)) {
+            this.connectedUsers.set(userId, new Set());
+          }
+          this.connectedUsers.get(userId)!.add(socket.id);
+          
+          // Join user to their personal room
+          socket.join(`user:${userId}`);
+          
+          // Join role-based rooms
+          socket.join(`role:${role}`);
+          
+          // Send pending notifications
+          await this.sendPendingNotifications(userId, socket);
+          
+          socket.emit('authenticated', { success: true, userId, role });
+          logger.info(`User ${userId} (${role}) authenticated with socket ${socket.id}`);
         } catch (error) {
-          logger.error('Socket authentication failed', error);
-          socket.emit('authentication_error', { error: 'Authentication failed' });
+          if (error instanceof jwt.JsonWebTokenError) {
+            socket.emit('authentication_error', { error: 'Invalid token' });
+          } else if (error instanceof jwt.TokenExpiredError) {
+            socket.emit('authentication_error', { error: 'Token expired' });
+          } else {
+            logger.error('Socket authentication failed', error);
+            socket.emit('authentication_error', { error: 'Authentication failed' });
+          }
         }
       });
 

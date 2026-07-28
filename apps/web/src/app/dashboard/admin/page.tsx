@@ -3,18 +3,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  Home, AlertTriangle, BarChart3, LayoutGrid, Settings,
-  Users, ShieldCheck, FileCheck, Clock, TrendingUp,
-  Calendar, FileText, Award, ClipboardCheck, Layers,
-  Gauge, Search, Bell, ChevronRight, Activity,
-  Plus, X, CheckCircle, XCircle, Filter, Download,
-  User, Briefcase, Building2, Target, AlertCircle,
-  CalendarDays, GraduationCap, FileQuestion, Edit, Trash2,
-  Eye, MessageSquare, Mail, Phone, MoreVertical, Send,
-  DollarSign, Bed, BookOpen, TrendingDown, PieChart,
-  BarChart, Megaphone, UserCheck, ClipboardList, CheckSquare,
-  AlertOctagon, Ticket, ListChecks, Wallet, ShoppingCart,
-  PanelLeftClose, PanelLeft
+  Home, AlertOctagon, BarChart3, LayoutGrid, Settings,
+  Users, ShieldCheck, FileCheck, Layers,
+  Bell, ChevronRight, Award, Megaphone, PanelLeftClose,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -35,11 +26,55 @@ import { NewWorkflowModal } from '@/components/dashboard/admin/NewWorkflowModal'
 
 type TabType = 'overview' | 'workflows' | 'students' | 'faculty' | 'requests' | 'coordination' | 'analytics' | 'complaints' | 'announcements' | 'compliance' | 'settings'
 
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-slate-50 p-8">
+      <div className="max-w-[1400px] mx-auto space-y-6 animate-pulse">
+        <div className="h-14 bg-white/80 rounded-2xl" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 bg-white rounded-2xl" />
+          ))}
+        </div>
+        <div className="h-64 bg-white rounded-2xl" />
+        <div className="grid grid-cols-2 gap-6">
+          <div className="h-48 bg-white rounded-2xl" />
+          <div className="h-48 bg-white rounded-2xl" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <AlertOctagon className="w-8 h-8 text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Failed to Load Dashboard</h2>
+        <p className="text-sm text-slate-500 mb-6">{message}</p>
+        <button
+          onClick={onRetry}
+          type="button"
+          className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+        >
+          Try Again
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function DashboardContent() {
   const ctx = useAdminDashboardContext()
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [showNewWorkflow, setShowNewWorkflow] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  if (ctx.loading) return <LoadingSkeleton />
+  if (ctx.error) return <ErrorState message={ctx.error} onRetry={ctx.refetch} />
 
   const navItems = [
     { label: 'Overview', icon: Home, section: 'Main' },
@@ -60,7 +95,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Navbar */}
-      <motion.header 
+      <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="fixed top-4 left-4 right-4 h-14 bg-white/90 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200/50 z-50 flex items-center px-5"
@@ -76,7 +111,7 @@ function DashboardContent() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
-          <button className="relative p-2.5 hover:bg-slate-100 rounded-xl transition-all duration-200">
+          <button type="button" className="relative p-2.5 hover:bg-slate-100 rounded-xl transition-all duration-200" aria-label="Notifications">
             <Bell className="w-5 h-5 text-slate-600" />
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white" />
           </button>
@@ -93,7 +128,7 @@ function DashboardContent() {
       </motion.header>
 
       {/* Sidebar */}
-      <motion.aside 
+      <motion.aside
         initial={{ opacity: 0 }}
         animate={{ width: sidebarCollapsed ? 80 : 260, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -101,9 +136,11 @@ function DashboardContent() {
       >
         <div className="flex items-center justify-between px-3 py-3 border-b border-slate-100">
           {!sidebarCollapsed && <span className="text-xs font-bold text-slate-400 uppercase">Menu</span>}
-          <button 
+          <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            type="button"
             className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {sidebarCollapsed ? (
               <ChevronRight className="w-4 h-4 text-slate-500" />
@@ -141,7 +178,7 @@ function DashboardContent() {
       </motion.aside>
 
       {/* Main Content */}
-      <main 
+      <main
         className={cn("pt-20 px-6 pb-6 min-h-screen transition-all duration-300", sidebarCollapsed ? "ml-[104px]" : "ml-[288px]")}
       >
         <div className="max-w-[1400px] mx-auto">

@@ -1,8 +1,16 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import type { ComponentType } from 'react'
 
-export function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: any; color: string }) {
+interface StatCardProps {
+  label: string
+  value: number | string
+  icon: ComponentType<{ className?: string }>
+  color: string
+}
+
+export function StatCard({ label, value, icon: Icon, color }: StatCardProps) {
   return (
     <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-2">

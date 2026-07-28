@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { WorkflowType, WorkflowState, WorkflowTransition, WorkflowInstance, WorkflowContext } from '@/types/workflow';
 import { logger } from '@/utils/logger';
 import Database from '@/config/database';
@@ -228,8 +229,13 @@ export class WorkflowEngine {
     }
 
     if (filters?.status) {
-      query += ` AND current_state = $${paramIndex++}`;
+      query += ` AND status = $${paramIndex++}`;
       params.push(filters.status);
+    }
+
+    if (filters?.departmentId) {
+      query += ` AND department_id = $${paramIndex++}`;
+      params.push(filters.departmentId);
     }
 
     if (filters?.priority) {
